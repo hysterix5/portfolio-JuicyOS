@@ -40,10 +40,10 @@ export const GET: APIRoute = async ({ url }) => {
 
     const clientId = process.env.SPOTIFY_CLIENT_ID;
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
-    const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
+    const redirectUri = process.env.SPOTIFY_REDIRECT_URI || `${url.origin}/api/spotify/callback`;
 
-    if (!clientId || !clientSecret || !redirectUri) {
-        return new Response('Missing Spotify configuration', { status: 500 });
+    if (!clientId || !clientSecret) {
+        return new Response('Missing Spotify configuration (SPOTIFY_CLIENT_ID or SPOTIFY_CLIENT_SECRET)', { status: 500 });
     }
 
     try {

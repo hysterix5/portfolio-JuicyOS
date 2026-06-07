@@ -3,12 +3,12 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ url }) => {
     const clientId = process.env.SPOTIFY_CLIENT_ID;
-    const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
+    const redirectUri = process.env.SPOTIFY_REDIRECT_URI || `${url.origin}/api/spotify/callback`;
 
-    if (!clientId || !redirectUri) {
-        return new Response('Missing SPOTIFY_CLIENT_ID or SPOTIFY_REDIRECT_URI in env', { status: 500 });
+    if (!clientId) {
+        return new Response('Missing SPOTIFY_CLIENT_ID in env', { status: 500 });
     }
 
     // Request permissions for user metadata, playlists, streaming playback, and user playback control
