@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import type { APIRoute } from 'astro';
 
+export const prerender = false;
+
 export const GET: APIRoute = async () => {
     const clientId = process.env.SPOTIFY_CLIENT_ID;
     const redirectUri = process.env.SPOTIFY_REDIRECT_URI;

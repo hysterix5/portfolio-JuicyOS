@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import type { APIRoute } from 'astro';
 
+export const prerender = false;
+
 export const GET: APIRoute = async ({ url }) => {
     const code = url.searchParams.get('code');
     const error = url.searchParams.get('error');
