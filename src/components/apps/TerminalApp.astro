@@ -1,0 +1,464 @@
+---
+/* Terminal App — Interactive "About Me" terminal */
+---
+
+<div
+  class="os-window closed"
+  id="win-terminal"
+  data-app="terminal"
+  style="width:700px;height:460px;"
+>
+  <div class="window-titlebar">
+    <div class="window-controls">
+      <button class="win-close"
+        ><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"
+          ><line x1="3" y1="3" x2="9" y2="9"></line><line
+            x1="9"
+            y1="3"
+            x2="3"
+            y2="9"></line></svg
+        ></button
+      >
+      <button class="win-minimize"
+        ><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"
+          ><line x1="2" y1="6" x2="10" y2="6"></line></svg
+        ></button
+      >
+      <button class="win-maximize"
+        ><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.5"
+          ><rect x="2" y="2" width="8" height="8" rx="1" fill="none"
+          ></rect></svg
+        ></button
+      >
+    </div>
+    <span class="window-title">joseph@juicyos: ~</span>
+    <div class="window-title-spacer"></div>
+  </div>
+  <div class="window-body terminal-body" id="terminal-body">
+    <div class="terminal-output" id="terminal-output"></div>
+    <div class="terminal-input-line">
+      <span class="terminal-prompt">
+        <span class="prompt-user">joseph</span><span class="prompt-at">@</span
+        ><span class="prompt-host">juicyos</span><span class="prompt-colon"
+          >:</span
+        ><span class="prompt-dir">~</span><span class="prompt-symbol">$</span>
+      </span>
+      <input
+        type="text"
+        class="terminal-input"
+        id="terminal-input"
+        autocomplete="off"
+        spellcheck="false"
+        autofocus
+      />
+      <span class="terminal-cursor"></span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .terminal-body {
+    background: var(--term-bg);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.7;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    color: var(--term-text);
+    cursor: text;
+  }
+
+  .terminal-output {
+    flex: 1;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .terminal-output .line {
+    animation: bootLine 0.1s ease forwards;
+  }
+
+  .terminal-output .cmd-line {
+    color: var(--term-text);
+  }
+
+  .terminal-output .cmd-line .prompt-user {
+    color: var(--term-green);
+    font-weight: 700;
+  }
+  .terminal-output .cmd-line .prompt-at {
+    color: var(--term-text);
+  }
+  .terminal-output .cmd-line .prompt-host {
+    color: var(--term-blue);
+    font-weight: 700;
+  }
+  .terminal-output .cmd-line .prompt-colon {
+    color: var(--term-text);
+  }
+  .terminal-output .cmd-line .prompt-dir {
+    color: var(--term-purple);
+    font-weight: 700;
+  }
+  .terminal-output .cmd-line .prompt-symbol {
+    color: var(--term-text);
+    margin-right: 8px;
+  }
+  .terminal-output .cmd-line .cmd-text {
+    color: var(--term-text);
+  }
+
+  .terminal-output .output-text {
+    color: var(--term-text);
+    opacity: 0.85;
+  }
+  .terminal-output .output-highlight {
+    color: var(--term-green);
+  }
+  .terminal-output .output-info {
+    color: var(--term-blue);
+  }
+  .terminal-output .output-warn {
+    color: var(--term-yellow);
+  }
+  .terminal-output .output-error {
+    color: var(--term-red);
+  }
+  .terminal-output .output-accent {
+    color: var(--term-purple);
+  }
+  .terminal-output .output-cyan {
+    color: var(--term-cyan);
+  }
+
+  .terminal-output .ascii-art {
+    color: var(--term-green);
+    font-size: 10px;
+    line-height: 1.2;
+    margin: 4px 0;
+  }
+
+  .terminal-input-line {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-height: 24px;
+    flex-shrink: 0;
+  }
+
+  .terminal-prompt {
+    display: flex;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .prompt-user {
+    color: var(--term-green);
+    font-weight: 700;
+  }
+  .prompt-at {
+    color: var(--term-text);
+  }
+  .prompt-host {
+    color: var(--term-blue);
+    font-weight: 700;
+  }
+  .prompt-colon {
+    color: var(--term-text);
+  }
+  .prompt-dir {
+    color: var(--term-purple);
+    font-weight: 700;
+  }
+  .prompt-symbol {
+    color: var(--term-text);
+    margin-right: 8px;
+  }
+
+  .terminal-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--term-text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    caret-color: var(--term-green);
+    padding: 0;
+  }
+
+  .terminal-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
+    background: var(--term-green);
+    animation: cursorBlink 1s step-end infinite;
+    margin-left: -1px;
+    opacity: 0.8;
+  }
+
+  .terminal-input:focus ~ .terminal-cursor {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  function initTerminal() {
+    const output = document.getElementById("terminal-output");
+    const input = document.getElementById("terminal-input") as HTMLInputElement;
+    const body = document.getElementById("terminal-body");
+    if (!output || !input || !body) return;
+
+    // Click anywhere in terminal to focus input
+    body.addEventListener("click", () => input.focus());
+
+    const commands: Record<string, () => string> = {
+      help: () => `<span class="output-highlight">Available commands:</span>
+
+  <span class="output-info">whoami</span>      — Who am I?
+  <span class="output-info">about</span>       — Full bio / background
+  <span class="output-info">skills</span>      — Technical skills
+  <span class="output-info">projects</span>    — Featured projects
+  <span class="output-info">contact</span>     — Get in touch
+  <span class="output-info">socials</span>     — Social media links
+  <span class="output-info">education</span>   — Education background
+  <span class="output-info">experience</span>  — Work experience
+  <span class="output-info">neofetch</span>    — System info
+  <span class="output-info">clear</span>       — Clear terminal
+  <span class="output-info">date</span>        — Current date/time
+  <span class="output-info">echo</span>        — Echo a message`,
+
+      whoami:
+        () => `<span class="output-highlight">Joseph Mel Resty Denopol</span> — <span class="output-accent">Full-Stack Developer</span>
+
+A dedicated Full-Stack Developer with hands-on experience building
+dynamic web and mobile applications using Laravel, Flutter, and Nuxt.js.`,
+
+      about:
+        () => `<span class="output-highlight">━━━ About Me ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+
+Hey there! 👋 I'm <span class="output-highlight">Joseph Mel Resty Denopol</span>, a dedicated
+full-stack developer with hands-on experience building dynamic
+web and mobile applications.
+
+I have a proven track record in <span class="output-accent">public sector compliance systems</span>
+and <span class="output-accent">enterprise application development</span> with a strong focus on
+data management, backend security, and database optimization.
+
+Passionate about collaborating with forward-thinking engineering
+teams to solve complex real-world technical challenges. 🚀
+
+<span class="output-info">Location:</span>  🇵🇭 Davao City, Philippines
+<span class="output-info">Focus:</span>     Laravel · Flutter · Nuxt.js
+<span class="output-info">Phone:</span>     +639984807409
+<span class="output-info">Status:</span>    <span class="output-highlight">Currently at EBOS Cloud Accountants</span>`,
+
+      skills:
+        () => `<span class="output-highlight">━━━ Technical Skills ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="output-info">Programming Languages</span>
+  PHP · Dart · JavaScript · C++ · C# · Python · SQL · HTML/CSS
+
+<span class="output-info">Frameworks</span>
+  Laravel · Flutter · Nuxt.js
+
+<span class="output-info">Databases</span>
+  Firebase · MySQL
+
+<span class="output-info">Tools & Tech</span>
+  Git · GitHub · RESTful APIs · Postman`,
+
+      projects:
+        () => `<span class="output-highlight">━━━ Featured Projects ━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="output-info">📁 juicy-portfolio</span>  <span class="output-accent">[This Site!]</span>
+   Linux OS-style portfolio with interactive desktop environment
+   <span class="output-cyan">Stack: Astro · TypeScript · CSS</span>
+
+<span class="output-info">📁 ebos-sme-platform</span>
+   Internal SME platform for EBOS Cloud Accountants
+   <span class="output-cyan">Stack: Laravel · MySQL · AI Integration</span>
+
+<span class="output-info">📁 vices-regulation-system</span>
+   Government regulatory tracking & compliance system
+   <span class="output-cyan">Stack: Laravel · Nuxt.js · MySQL</span>
+
+<span class="output-warn">Tip:</span> Open the <span class="output-accent">File Manager</span> app from the dock for more details!`,
+
+      contact:
+        () => `<span class="output-highlight">━━━ Contact ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="output-info">📧 Email:</span>    denopolred@gmail.com
+<span class="output-info">📱 Phone:</span>    +639984807409
+<span class="output-info">💼 LinkedIn:</span>  linkedin.com/in/joseph-denopol-ba507a308
+<span class="output-info">🐙 GitHub:</span>   github.com/hysterix5
+<span class="output-info">📍 Location:</span> Davao City, Philippines
+
+<span class="output-highlight">Let's build something amazing together!</span>`,
+
+      socials:
+        () => `<span class="output-highlight">━━━ Social Links ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="output-info">GitHub</span>      → github.com/hysterix5
+<span class="output-info">LinkedIn</span>    → linkedin.com/in/joseph-denopol-ba507a308
+<span class="output-info">Email</span>       → denopolred@gmail.com
+
+<span class="output-warn">Tip:</span> Open the <span class="output-accent">Browser</span> app for clickable links!`,
+
+      education:
+        () => `<span class="output-highlight">━━━ Education ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="output-info">🎓 B.S. Information Technology - Assumption College of Davao</span>
+   Davao City, Philippines · 2020 - 2024
+   Relevant Coursework: Data Structures, Algorithms,
+   Web Development, Database Systems, Software Engineering 
+
+<span class="output-info">🎓 B.S. Information Technology - Jose Maria College</span>
+   Davao City, Philippines · 2019 - 2020
+   Relevant Coursework: Foundations of Programming, UI/UX, Systems Analysis & Design`,
+
+      experience:
+        () => `<span class="output-highlight">━━━ Work Experience ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+
+<span class="output-info">💼 Back-end Developer</span> — EBOS Cloud Accountants
+   <span class="output-cyan">October 2025 - Present</span>
+   • Developed & maintained features for internal SME platform using Laravel
+   • Optimized system performance, diagnosing & patching recurring errors
+   • Integrated text-generative AI for a templating module
+   • Scanned codebase for security flaws, preventing data breaches
+   • Upgraded core system architecture, refactoring legacy codebase
+
+<span class="output-info">💼 Full-stack Developer Intern</span> — City Information Technology Center
+   <span class="output-cyan">February 2024 - July 2024</span>
+   • Built a Vices Regulation Information System using Laravel & Nuxt.js
+   • Digitized regulatory tracking for public sector compliance
+   • Collaborated with cross-functional team on system deployments`,
+
+      neofetch:
+        () => `<span class="ascii-art">       .--.        </span> <span class="output-highlight">joseph@juicyos</span>
+<span class="ascii-art">      |o_o |       </span> <span class="output-info">───────────────</span>
+<span class="ascii-art">      |:_/ |       </span> <span class="output-info">OS:</span>      JuicyOS 1.0 (Linux)
+<span class="ascii-art">     //   \\ \\      </span> <span class="output-info">Host:</span>    Portfolio v1.0
+<span class="ascii-art">    (|     | )     </span> <span class="output-info">Kernel:</span>  6.1.0-juicy
+<span class="ascii-art">   /'\\_   _/\`\\    </span> <span class="output-info">Shell:</span>   juicy-bash 5.2
+<span class="ascii-art">   \\___)=(___/    </span> <span class="output-info">DE:</span>      JuicyDE (GNOME-like)
+                   <span class="output-info">Theme:</span>   macOS-Inspired Dark
+                   <span class="output-info">Icons:</span>   Papirus-Dark
+                   <span class="output-info">WM:</span>      JuicyWM
+                   <span class="output-info">CPU:</span>     Creativity × ∞
+                   <span class="output-info">Memory:</span>  Unlimited Ideas`,
+
+      date: () => {
+        const now = new Date();
+        return `<span class="output-text">${now.toString()}</span>`;
+      },
+
+      clear: () => "__CLEAR__",
+    };
+
+    const commandHistory: string[] = [];
+    let historyIndex = -1;
+
+    // Welcome message on first open
+    let hasShownWelcome = false;
+
+    document.addEventListener("open-app", (e) => {
+      const { app } = (e as CustomEvent).detail;
+      if (app === "terminal" && !hasShownWelcome) {
+        hasShownWelcome = true;
+        setTimeout(() => {
+          addOutput(`<span class="output-highlight">Welcome to JuicyOS Terminal v1.0</span>
+<span class="output-text">Type </span><span class="output-info">help</span><span class="output-text"> to see available commands.</span>
+`);
+          input.focus();
+        }, 350);
+      }
+    });
+
+    function addOutput(html: string) {
+      const div = document.createElement("div");
+      div.className = "line";
+      div.innerHTML = html;
+      output!.appendChild(div);
+      output!.scrollTop = output!.scrollHeight;
+    }
+
+    function addCommandLine(cmd: string) {
+      addOutput(
+        `<span class="cmd-line"><span class="prompt-user">joseph</span><span class="prompt-at">@</span><span class="prompt-host">juicyos</span><span class="prompt-colon">:</span><span class="prompt-dir">~</span><span class="prompt-symbol">$</span> <span class="cmd-text">${escapeHtml(cmd)}</span></span>`,
+      );
+    }
+
+    function escapeHtml(text: string) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function processCommand(raw: string) {
+      const trimmed = raw.trim();
+      addCommandLine(raw);
+
+      if (!trimmed) return;
+
+      commandHistory.unshift(trimmed);
+      historyIndex = -1;
+
+      const parts = trimmed.split(/\s+/);
+      const cmd = parts[0].toLowerCase();
+      const args = parts.slice(1);
+
+      if (cmd === "echo") {
+        addOutput(
+          `<span class="output-text">${escapeHtml(args.join(" "))}</span>`,
+        );
+        return;
+      }
+
+      const handler = commands[cmd];
+      if (handler) {
+        const result = handler();
+        if (result === "__CLEAR__") {
+          output!.innerHTML = "";
+        } else {
+          addOutput(result);
+        }
+      } else {
+        addOutput(`<span class="output-error">Command not found: ${escapeHtml(cmd)}</span>
+<span class="output-text">Type </span><span class="output-info">help</span><span class="output-text"> for available commands.</span>`);
+      }
+
+      // Add blank line after output
+      addOutput("");
+    }
+
+    input.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Enter") {
+        processCommand(input.value);
+        input.value = "";
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (historyIndex < commandHistory.length - 1) {
+          historyIndex++;
+          input.value = commandHistory[historyIndex];
+        }
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (historyIndex > 0) {
+          historyIndex--;
+          input.value = commandHistory[historyIndex];
+        } else {
+          historyIndex = -1;
+          input.value = "";
+        }
+      } else if (e.key === "l" && e.ctrlKey) {
+        e.preventDefault();
+        output!.innerHTML = "";
+      }
+    });
+  }
+
+  initTerminal();
+</script>

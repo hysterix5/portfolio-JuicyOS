@@ -1,0 +1,656 @@
+---
+/* File Manager App — Projects showcase */
+---
+
+<div class="os-window closed" id="win-filemanager" data-app="filemanager" style="width:780px;height:520px;">
+  <div class="window-titlebar">
+    <div class="window-controls">
+      <button class="win-close"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button>
+      <button class="win-minimize"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/></svg></button>
+      <button class="win-maximize"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="8" height="8" rx="1" fill="none"/></svg></button>
+    </div>
+    <span class="window-title">Files — ~/Projects</span>
+    <div class="window-title-spacer"></div>
+  </div>
+  <div class="window-body fm-body">
+    <div class="fm-sidebar">
+      <div class="fm-sidebar-section">
+        <div class="fm-sidebar-title">Favorites</div>
+        <button class="fm-sidebar-item active" data-category="all">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          All Projects
+        </button>
+        <button class="fm-sidebar-item" data-category="web">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Web Apps
+        </button>
+        <button class="fm-sidebar-item" data-category="api">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Backend / API
+        </button>
+        <button class="fm-sidebar-item" data-category="oss">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Open Source
+        </button>
+      </div>
+      <div class="fm-sidebar-section">
+        <div class="fm-sidebar-title">Tags</div>
+        <button class="fm-sidebar-item" data-category="laravel">
+          <span class="fm-tag-dot" style="background:#ff2d20;"></span>
+          Laravel
+        </button>
+        <button class="fm-sidebar-item" data-category="flutter">
+          <span class="fm-tag-dot" style="background:#02569b;"></span>
+          Flutter
+        </button>
+        <button class="fm-sidebar-item" data-category="nuxt">
+          <span class="fm-tag-dot" style="background:#00dc82;"></span>
+          Nuxt.js
+        </button>
+      </div>
+    </div>
+    <div class="fm-main">
+      <div class="fm-toolbar">
+        <div class="fm-breadcrumb">
+          <span class="fm-bc-segment">~</span>
+          <span class="fm-bc-sep">/</span>
+          <span class="fm-bc-segment active">Projects</span>
+        </div>
+        <div class="fm-search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search projects..." class="fm-search-input" id="fm-search" />
+        </div>
+      </div>
+      <div class="fm-grid" id="fm-grid">
+        <!-- Projects populated by JS -->
+      </div>
+      <div class="fm-detail hidden" id="fm-detail">
+        <button class="fm-detail-back" id="fm-detail-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          Back
+        </button>
+        <div class="fm-detail-content" id="fm-detail-content"></div>
+      </div>
+      <div class="fm-statusbar">
+        <span id="fm-count">4 items</span>
+        <span class="fm-view-toggle">
+          <button class="fm-view-btn active" data-view="grid" title="Grid view">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="fm-view-btn" data-view="list" title="List view">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .fm-body {
+    display: flex;
+    background: #0d1117;
+    font-size: 13px;
+  }
+
+  /* Sidebar */
+  .fm-sidebar {
+    width: 200px;
+    background: rgba(13, 17, 23, 0.95);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 12px 0;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .fm-sidebar-section {
+    margin-bottom: 16px;
+  }
+
+  .fm-sidebar-title {
+    padding: 4px 16px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .fm-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 16px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: left;
+  }
+
+  .fm-sidebar-item:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
+  }
+
+  .fm-sidebar-item.active {
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--text-accent);
+  }
+
+  .fm-tag-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Main area */
+  .fm-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .fm-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    gap: 12px;
+  }
+
+  .fm-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .fm-bc-segment.active {
+    color: var(--text-primary);
+  }
+
+  .fm-bc-sep {
+    color: var(--text-muted);
+    opacity: 0.5;
+  }
+
+  .fm-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    color: var(--text-muted);
+  }
+
+  .fm-search-input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    width: 140px;
+  }
+
+  .fm-search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  /* Project grid */
+  .fm-grid {
+    flex: 1;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    overflow-y: auto;
+    align-content: start;
+  }
+
+  .fm-grid.list-view {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .fm-project-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 16px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+  }
+
+  .fm-project-card:hover {
+    background: rgba(124, 58, 237, 0.08);
+    border-color: rgba(124, 58, 237, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .fm-grid.list-view .fm-project-card {
+    flex-direction: row;
+    text-align: left;
+    padding: 10px 16px;
+    gap: 12px;
+  }
+
+  .fm-project-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .fm-grid.list-view .fm-project-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    border-radius: 8px;
+  }
+
+  .fm-project-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .fm-project-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .fm-project-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .fm-project-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 2px;
+  }
+
+  .fm-grid.list-view .fm-project-tags {
+    justify-content: flex-start;
+  }
+
+  .fm-ptag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(124, 58, 237, 0.12);
+    color: var(--text-accent);
+    font-weight: 500;
+  }
+
+  /* Detail view */
+  .fm-detail {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .fm-detail.hidden {
+    display: none;
+  }
+
+  .fm-detail-back {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: none;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    margin-bottom: 16px;
+    transition: background var(--transition-fast);
+  }
+
+  .fm-detail-back:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  .fm-detail-header {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .fm-detail-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .fm-detail-meta h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .fm-detail-meta p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .fm-detail-section {
+    margin-top: 16px;
+  }
+
+  .fm-detail-section h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .fm-detail-links {
+    display: flex;
+    gap: 8px;
+  }
+
+  .fm-detail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--text-accent);
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+  }
+
+  .fm-detail-link:hover {
+    background: rgba(124, 58, 237, 0.25);
+    transform: translateY(-1px);
+  }
+
+  /* Status bar */
+  .fm-statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .fm-view-toggle {
+    display: flex;
+    gap: 2px;
+  }
+
+  .fm-view-btn {
+    padding: 3px 6px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: all var(--transition-fast);
+  }
+
+  .fm-view-btn.active {
+    background: rgba(255,255,255,0.08);
+    color: var(--text-primary);
+  }
+
+  .fm-view-btn:hover {
+    color: var(--text-primary);
+  }
+</style>
+
+<script>
+  function initFileManager() {
+    const grid = document.getElementById('fm-grid');
+    const detail = document.getElementById('fm-detail');
+    const detailContent = document.getElementById('fm-detail-content');
+    const detailBack = document.getElementById('fm-detail-back');
+    const searchInput = document.getElementById('fm-search') as HTMLInputElement;
+    const countEl = document.getElementById('fm-count');
+    const sidebarItems = document.querySelectorAll('.fm-sidebar-item');
+    const viewBtns = document.querySelectorAll('.fm-view-btn');
+
+    if (!grid) return;
+
+    const projects = [
+      {
+        id: 'juicy-portfolio',
+        name: 'juicy-portfolio',
+        desc: 'Linux OS-style portfolio with interactive desktop, terminal, and window manager. You\'re using it right now!',
+        icon: '🖥️',
+        color: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+        tags: ['Astro', 'TypeScript', 'CSS'],
+        categories: ['web', 'oss'],
+        details: 'A fully interactive desktop environment built with Astro. Features include a boot sequence, login screen, draggable windows, interactive terminal, file manager, browser, code editor, and settings panel.',
+        github: 'https://github.com/hysterix5',
+        demo: '#',
+      },
+      {
+        id: 'ebos-sme-platform',
+        name: 'ebos-sme-platform',
+        desc: 'Internal SME platform for EBOS Cloud Accountants with AI-powered templating and security hardening.',
+        icon: '☁️',
+        color: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+        tags: ['Laravel', 'MySQL', 'AI'],
+        categories: ['web', 'api', 'laravel'],
+        details: 'An enterprise platform for small-medium enterprises built with Laravel. Features include AI-powered templating, security vulnerability patching, system architecture upgrades, and performance optimization.',
+        github: '#',
+        demo: '#',
+      },
+      {
+        id: 'vices-regulation',
+        name: 'vices-regulation-system',
+        desc: 'Government regulatory tracking & compliance system digitizing public sector operations.',
+        icon: '🏛️',
+        color: 'linear-gradient(135deg, #22c55e, #4ade80)',
+        tags: ['Laravel', 'Nuxt.js', 'MySQL'],
+        categories: ['web', 'api', 'laravel', 'nuxt'],
+        details: 'A Vices Regulation Information System built for the City Information Technology Center. Digitizes regulatory tracking and enhances public sector compliance using Laravel and Nuxt.js.',
+        github: '#',
+        demo: '#',
+      },
+      {
+        id: 'denopscode-portfolio',
+        name: 'denopscode-portfolio',
+        desc: 'Personal developer portfolio website showcasing projects and skills.',
+        icon: '🌐',
+        color: 'linear-gradient(135deg, #e95420, #f97316)',
+        tags: ['Nuxt.js', 'Vercel'],
+        categories: ['web', 'oss', 'nuxt'],
+        details: 'A modern developer portfolio built with Nuxt.js and deployed on Vercel. Showcases projects, skills, and contact information with a clean and responsive design.',
+        github: 'https://github.com/hysterix5',
+        demo: 'https://denopscode-portfolio.vercel.app',
+      },
+      {
+        id: 'flutter-mobile',
+        name: 'flutter-mobile-apps',
+        desc: 'Cross-platform mobile applications built with Flutter and Dart.',
+        icon: '📱',
+        color: 'linear-gradient(135deg, #06b6d4, #22d3ee)',
+        tags: ['Flutter', 'Dart', 'Firebase'],
+        categories: ['web', 'oss', 'flutter'],
+        details: 'Mobile application development using Flutter framework with Dart. Integrated with Firebase for backend services, authentication, and real-time data synchronization.',
+        github: 'https://github.com/hysterix5',
+        demo: '#',
+      },
+      {
+        id: 'restful-apis',
+        name: 'restful-api-services',
+        desc: 'Backend API services with authentication, data management, and security hardening.',
+        icon: '⚡',
+        color: 'linear-gradient(135deg, #eab308, #facc15)',
+        tags: ['PHP', 'Laravel', 'Postman'],
+        categories: ['api', 'laravel'],
+        details: 'RESTful API backend services built with Laravel, featuring authentication, data validation, database optimization, and security patches to prevent unauthorized access.',
+        github: 'https://github.com/hysterix5',
+        demo: '#',
+      },
+    ];
+
+    let currentCategory = 'all';
+
+    function renderProjects(filter?: string) {
+      let filtered = projects;
+
+      if (currentCategory !== 'all') {
+        filtered = filtered.filter(p => p.categories.includes(currentCategory));
+      }
+
+      if (filter) {
+        const q = filter.toLowerCase();
+        filtered = filtered.filter(p =>
+          p.name.toLowerCase().includes(q) ||
+          p.desc.toLowerCase().includes(q) ||
+          p.tags.some(t => t.toLowerCase().includes(q))
+        );
+      }
+
+      grid!.innerHTML = filtered.map(p => `
+        <div class="fm-project-card" data-project="${p.id}">
+          <div class="fm-project-icon" style="background:${p.color}">${p.icon}</div>
+          <div class="fm-project-info">
+            <div class="fm-project-name">${p.name}</div>
+            <div class="fm-project-desc">${p.desc}</div>
+            <div class="fm-project-tags">
+              ${p.tags.map(t => `<span class="fm-ptag">${t}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      if (countEl) countEl.textContent = `${filtered.length} item${filtered.length !== 1 ? 's' : ''}`;
+
+      // Attach click events
+      grid!.querySelectorAll('.fm-project-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const pid = (card as HTMLElement).dataset.project;
+          const p = projects.find(pr => pr.id === pid);
+          if (p) showDetail(p);
+        });
+      });
+    }
+
+    function showDetail(p: typeof projects[0]) {
+      if (!detail || !detailContent) return;
+      grid!.style.display = 'none';
+      detail.classList.remove('hidden');
+      detailContent.innerHTML = `
+        <div class="fm-detail-header">
+          <div class="fm-detail-icon" style="background:${p.color}">${p.icon}</div>
+          <div class="fm-detail-meta">
+            <h3>${p.name}</h3>
+            <p>${p.details}</p>
+            <div class="fm-project-tags" style="margin-top:8px;justify-content:flex-start;">
+              ${p.tags.map(t => `<span class="fm-ptag">${t}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="fm-detail-section">
+          <h4>Links</h4>
+          <div class="fm-detail-links">
+            <a href="${p.github}" class="fm-detail-link" target="_blank" rel="noopener">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              GitHub
+            </a>
+            <a href="${p.demo}" class="fm-detail-link" target="_blank" rel="noopener">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Live Demo
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    // Back button
+    detailBack?.addEventListener('click', () => {
+      if (!detail) return;
+      detail.classList.add('hidden');
+      grid!.style.display = '';
+    });
+
+    // Sidebar category filter
+    sidebarItems.forEach(item => {
+      item.addEventListener('click', () => {
+        sidebarItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        currentCategory = (item as HTMLElement).dataset.category || 'all';
+        renderProjects(searchInput?.value);
+      });
+    });
+
+    // Search
+    searchInput?.addEventListener('input', () => {
+      renderProjects(searchInput.value);
+    });
+
+    // View toggle
+    viewBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        viewBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const view = (btn as HTMLElement).dataset.view;
+        if (view === 'list') {
+          grid.classList.add('list-view');
+        } else {
+          grid.classList.remove('list-view');
+        }
+      });
+    });
+
+    renderProjects();
+  }
+
+  initFileManager();
+</script>

@@ -1,0 +1,58 @@
+---
+/* Desktop — Main container with wallpaper background */
+import TopPanel from './TopPanel.astro';
+import Dock from './Dock.astro';
+---
+
+<div id="desktop">
+  <img class="desktop-wallpaper" src="/wallpaper.png" alt="" />
+  <div class="desktop-workspace" id="desktop-workspace">
+    <slot />
+  </div>
+  <TopPanel />
+  <Dock />
+</div>
+
+<style>
+  #desktop {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.8s var(--ease-out);
+  }
+
+  #desktop.visible {
+    opacity: 1;
+  }
+
+  .desktop-wallpaper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    animation: wallpaperDrift 60s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .desktop-workspace {
+    position: absolute;
+    top: var(--panel-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-windows);
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  document.addEventListener('login-complete', () => {
+    const desktop = document.getElementById('desktop');
+    if (desktop) {
+      desktop.classList.add('visible');
+    }
+  });
+</script>

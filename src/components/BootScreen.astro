@@ -1,0 +1,171 @@
+---
+/* Boot Screen — Simulated Linux boot sequence */
+---
+
+<div id="boot-screen">
+  <div class="boot-content">
+    <div class="boot-logo">
+      <svg viewBox="0 0 80 80" width="60" height="60" fill="none">
+        <circle cx="40" cy="40" r="36" stroke="#7c3aed" stroke-width="2.5" fill="none" opacity="0.3"/>
+        <circle cx="40" cy="40" r="24" stroke="#a78bfa" stroke-width="2" fill="none" opacity="0.5"/>
+        <circle cx="40" cy="40" r="12" fill="#7c3aed" opacity="0.8"/>
+      </svg>
+      <span class="os-name">JuicyOS</span>
+    </div>
+    <div class="boot-log" id="boot-log"></div>
+    <div class="boot-progress">
+      <div class="boot-progress-bar" id="boot-progress-bar"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  #boot-screen {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-boot);
+    background: #0a0a14;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  #boot-screen.hidden {
+    animation: fadeOut 0.6s var(--ease-out) forwards;
+    pointer-events: none;
+  }
+
+  .boot-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    max-width: 600px;
+    width: 100%;
+    padding: 24px;
+  }
+
+  .boot-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+
+  .boot-logo svg {
+    animation: spin 3s linear infinite;
+  }
+
+  .os-name {
+    font-family: var(--font-ui);
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa, #e95420);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+  }
+
+  .boot-log {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #6b7280;
+    line-height: 1.8;
+    width: 100%;
+    min-height: 160px;
+    text-align: left;
+  }
+
+  .boot-log .line {
+    animation: bootLine 0.15s var(--ease-out) forwards;
+    opacity: 0;
+  }
+
+  .boot-log .line.ok {
+    color: var(--term-green);
+  }
+
+  .boot-log .line.info {
+    color: var(--term-blue);
+  }
+
+  .boot-log .line.warn {
+    color: var(--term-yellow);
+  }
+
+  .boot-progress {
+    width: 220px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .boot-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #a78bfa);
+    border-radius: 2px;
+    transition: width 0.3s var(--ease-out);
+  }
+</style>
+
+<script>
+  const bootMessages = [
+    { text: '[    0.000000] JuicyOS Kernel 6.1.0-juicy initializing...', type: 'info' },
+    { text: '[    0.012341] CPU: 8 cores @ 3.6GHz detected', type: '' },
+    { text: '[    0.023456] Memory: 16384MB available', type: '' },
+    { text: '[    0.034567] ACPI: RSDP 0x00000000000F0000', type: '' },
+    { text: '[    0.056789] PCI: Scanning bus 0000:00', type: '' },
+    { text: '[    0.078901] GPU: Initializing display driver...', type: 'info' },
+    { text: '[    0.089012] GPU: Resolution set to 1920x1080@60Hz', type: 'ok' },
+    { text: '[    0.123456] NET: Ethernet controller initialized', type: 'ok' },
+    { text: '[    0.234567] USB: XHCI host controller detected', type: '' },
+    { text: '[    0.345678] STORAGE: NVMe SSD 512GB mounted at /', type: 'ok' },
+    { text: '[    0.456789] Loading portfolio modules...', type: 'info' },
+    { text: '[    0.567890] MODULE: terminal.ko loaded', type: 'ok' },
+    { text: '[    0.678901] MODULE: filemanager.ko loaded', type: 'ok' },
+    { text: '[    0.789012] MODULE: browser.ko loaded', type: 'ok' },
+    { text: '[    0.890123] MODULE: editor.ko loaded', type: 'ok' },
+    { text: '[    0.901234] MODULE: settings.ko loaded', type: 'ok' },
+    { text: '[    1.012345] Starting JuicyOS Desktop Environment...', type: 'info' },
+    { text: '[    1.234567] All systems operational. Welcome, Joseph.', type: 'ok' },
+  ];
+
+  function startBoot() {
+    const bootLog = document.getElementById('boot-log');
+    const progressBar = document.getElementById('boot-progress-bar');
+    const bootScreen = document.getElementById('boot-screen');
+    if (!bootLog || !progressBar || !bootScreen) return;
+
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i >= bootMessages.length) {
+        clearInterval(interval);
+        setTimeout(() => {
+          bootScreen.classList.add('hidden');
+          setTimeout(() => {
+            bootScreen.style.display = 'none';
+            document.dispatchEvent(new CustomEvent('boot-complete'));
+          }, 600);
+        }, 400);
+        return;
+      }
+
+      const msg = bootMessages[i];
+      const line = document.createElement('div');
+      line.className = `line ${msg.type}`;
+      line.textContent = msg.text;
+      bootLog.appendChild(line);
+      bootLog.scrollTop = bootLog.scrollHeight;
+
+      const progress = ((i + 1) / bootMessages.length) * 100;
+      progressBar.style.width = `${progress}%`;
+      i++;
+    }, 120);
+  }
+
+  startBoot();
+</script>

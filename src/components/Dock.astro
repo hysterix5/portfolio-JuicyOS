@@ -1,0 +1,274 @@
+---
+/* Dock — macOS-style app launcher at the bottom */
+---
+
+<div id="dock-wrapper">
+  <div id="dock" class="glass">
+    <button class="dock-item" data-app="terminal" title="Terminal — About Me">
+      <div class="dock-icon terminal-icon">
+        <svg viewBox="0 0 48 48" fill="none">
+          <rect x="4" y="6" width="40" height="36" rx="6" fill="#1e1e2e" stroke="#7c3aed" stroke-width="1.5"/>
+          <path d="M14 18l6 6-6 6" stroke="#3fb950" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="24" y1="30" x2="34" y2="30" stroke="#6b7280" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="dock-indicator"></div>
+    </button>
+
+    <button class="dock-item" data-app="filemanager" title="Files — Projects">
+      <div class="dock-icon files-icon">
+        <svg viewBox="0 0 48 48" fill="none">
+          <path d="M6 14a4 4 0 014-4h8l4 4h16a4 4 0 014 4v18a4 4 0 01-4 4H10a4 4 0 01-4-4V14z" fill="#3b82f6" opacity="0.8"/>
+          <path d="M6 20h36v16a4 4 0 01-4 4H10a4 4 0 01-4-4V20z" fill="#60a5fa" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="dock-indicator"></div>
+    </button>
+
+    <button class="dock-item" data-app="browser" title="Browser — Links & Social">
+      <div class="dock-icon browser-icon">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="18" fill="#e95420" opacity="0.85"/>
+          <circle cx="24" cy="24" r="18" fill="none" stroke="#fff" stroke-width="1" opacity="0.3"/>
+          <ellipse cx="24" cy="24" rx="8" ry="18" fill="none" stroke="#fff" stroke-width="1.2" opacity="0.4"/>
+          <line x1="6" y1="24" x2="42" y2="24" stroke="#fff" stroke-width="1.2" opacity="0.4"/>
+          <line x1="24" y1="6" x2="24" y2="42" stroke="#fff" stroke-width="1.2" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="dock-indicator"></div>
+    </button>
+
+    <button class="dock-item" data-app="editor" title="Editor — Skills & Resume">
+      <div class="dock-icon editor-icon">
+        <svg viewBox="0 0 48 48" fill="none">
+          <rect x="6" y="6" width="36" height="36" rx="6" fill="#1e1e3a"/>
+          <path d="M12 14h24M12 20h18M12 26h22M12 32h16" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+          <rect x="11" y="13" width="2" height="2" rx="0.5" fill="#3fb950"/>
+          <rect x="11" y="19" width="2" height="2" rx="0.5" fill="#58a6ff"/>
+          <rect x="11" y="25" width="2" height="2" rx="0.5" fill="#d29922"/>
+          <rect x="11" y="31" width="2" height="2" rx="0.5" fill="#f85149"/>
+        </svg>
+      </div>
+      <div class="dock-indicator"></div>
+    </button>
+
+    <button class="dock-item" data-app="spotify" title="Spotify — Music">
+      <div class="dock-icon spotify-icon">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="20" fill="#1db954"/>
+          <path d="M33.7 21.4c-3.8-2.3-10.1-2.5-13.7-1.4-.6.2-1.2-.1-1.4-.7-.2-.6.1-1.2.7-1.4 4.2-1.3 11.1-1 15.5 1.6.5.3.7 1 .4 1.6-.3.4-1 .6-1.5.3zm-.4 3.5c-.3.4-.8.5-1.2.3-3.2-2-8-2.5-11.7-1.4-.5.1-1-.1-1.1-.6-.1-.5.1-1 .6-1.1 4.3-1.3 9.6-.7 13.2 1.6.4.2.5.8.2 1.2zm-1.4 3.4c-.2.3-.7.4-1 .2-2.8-1.7-6.3-2.1-10.4-1.1-.4.1-.8-.1-.9-.5-.1-.4.1-.8.5-.9 4.5-1.1 8.4-.6 11.5 1.3.4.2.5.6.3 1z" fill="white"/>
+        </svg>
+      </div>
+      <div class="dock-indicator"></div>
+    </button>
+
+    <div class="dock-divider"></div>
+
+    <button class="dock-item" data-app="settings" title="Settings">
+      <div class="dock-icon settings-icon">
+        <svg viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="16" fill="rgba(107,107,133,0.3)"/>
+          <circle cx="24" cy="24" r="7" fill="none" stroke="#a0a0b8" stroke-width="2"/>
+          <g stroke="#a0a0b8" stroke-width="2.5" stroke-linecap="round">
+            <line x1="24" y1="6" x2="24" y2="12"/>
+            <line x1="24" y1="36" x2="24" y2="42"/>
+            <line x1="6" y1="24" x2="12" y2="24"/>
+            <line x1="36" y1="24" x2="42" y2="24"/>
+            <line x1="11.3" y1="11.3" x2="15.5" y2="15.5"/>
+            <line x1="32.5" y1="32.5" x2="36.7" y2="36.7"/>
+            <line x1="11.3" y1="36.7" x2="15.5" y2="32.5"/>
+            <line x1="32.5" y1="15.5" x2="36.7" y2="11.3"/>
+          </g>
+        </svg>
+      </div>
+      <div class="dock-indicator"></div>
+    </button>
+  </div>
+</div>
+
+<style>
+  #dock-wrapper {
+    position: fixed;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    z-index: var(--z-dock);
+    opacity: 0;
+    transition: transform 0.6s var(--ease-spring), opacity 0.4s var(--ease-out);
+  }
+
+  #dock-wrapper.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  #dock {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 18px;
+    background: var(--dock-bg);
+    border: 1px solid var(--dock-border);
+    box-shadow: var(--shadow-dock);
+  }
+
+  .dock-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 4px;
+    transition: transform 0.25s var(--ease-spring);
+    position: relative;
+  }
+
+  .dock-item:hover {
+    transform: translateY(-6px) scale(1.18);
+  }
+
+  .dock-item:hover + .dock-item,
+  .dock-item:has(+ .dock-item:hover) {
+    transform: translateY(-3px) scale(1.08);
+  }
+
+  .dock-item:active {
+    transform: translateY(-2px) scale(1.05);
+  }
+
+  .dock-item.bouncing {
+    animation: dockBounce 0.5s var(--ease-out);
+  }
+
+  .dock-icon {
+    width: var(--dock-icon-size);
+    height: var(--dock-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: filter 0.2s;
+  }
+
+  .dock-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .dock-item:hover .dock-icon {
+    filter: brightness(1.15);
+  }
+
+  .dock-indicator {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: transparent;
+    transition: background var(--transition-fast);
+  }
+
+  .dock-item.active .dock-indicator {
+    background: rgba(255,255,255,0.7);
+  }
+
+  .dock-divider {
+    width: 1px;
+    height: 36px;
+    background: rgba(255,255,255,0.12);
+    margin: 0 4px;
+    align-self: center;
+  }
+
+  /* Tooltip */
+  .dock-item::before {
+    content: attr(title);
+    position: absolute;
+    top: -36px;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    padding: 4px 10px;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    font-family: var(--font-ui);
+    font-size: 11.5px;
+    font-weight: 500;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s var(--ease-out);
+  }
+
+  .dock-item:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .dock-item.no-magnify:hover {
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  .dock-item.no-magnify:hover + .dock-item,
+  .dock-item.no-magnify:has(+ .dock-item:hover) {
+    transform: none;
+  }
+
+  @media (max-width: 640px) {
+    #dock {
+      gap: 2px;
+      padding: 4px 8px;
+    }
+    .dock-icon {
+      width: 40px;
+      height: 40px;
+    }
+    .dock-divider {
+      height: 28px;
+    }
+  }
+</style>
+
+<script>
+  function initDock() {
+    const dockWrapper = document.getElementById('dock-wrapper');
+    const dockItems = document.querySelectorAll('.dock-item');
+    if (!dockWrapper) return;
+
+    document.addEventListener('login-complete', () => {
+      setTimeout(() => {
+        dockWrapper.classList.add('visible');
+      }, 200);
+    });
+
+    dockItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const app = item.getAttribute('data-app');
+        if (!app) return;
+
+        // Bounce animation
+        item.classList.add('bouncing');
+        setTimeout(() => item.classList.remove('bouncing'), 500);
+
+        // Dispatch open event
+        document.dispatchEvent(new CustomEvent('open-app', { detail: { app } }));
+      });
+    });
+
+    // Listen for window state changes to update active indicators
+    document.addEventListener('window-state-change', (e) => {
+      const { app, state } = (e as CustomEvent).detail;
+      const item = document.querySelector(`.dock-item[data-app="${app}"]`);
+      if (item) {
+        if (state === 'closed') {
+          item.classList.remove('active');
+        } else {
+          item.classList.add('active');
+        }
+      }
+    });
+  }
+  initDock();
+</script>

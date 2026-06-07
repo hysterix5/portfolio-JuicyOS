@@ -1,0 +1,1615 @@
+---
+/* Spotify App — Music Player with public playlists */
+
+interface SpotifyTrack {
+    id: string;
+    name: string;
+    artists: string;
+    album: string;
+    albumArt: string;
+    duration: number;
+    previewUrl: string | null;
+}
+
+interface SpotifyPlaylist {
+    id: string;
+    name: string;
+    image: string;
+    trackCount: number;
+}
+
+
+
+let playlists: SpotifyPlaylist[] = [];
+let tracks: SpotifyTrack[] = [];
+let playlistName = "Featured Playlists";
+let playlistImage = "";
+let currentPlaylistId = "";
+
+
+
+// Simple server-side in-memory cache to prevent 429 rate limits
+if (!(globalThis as any).spotifyCache) {
+    (globalThis as any).spotifyCache = {
+        playlists: null,
+        tracks: {},
+        expiresAt: 0,
+        accessToken: "",
+        tokenExpiresAt: 0
+    };
+}
+const cache = (globalThis as any).spotifyCache;
+
+// Invalidate cache if env variables have changed
+if (cache.cachedRefreshToken !== process.env.SPOTIFY_REFRESH_TOKEN ||
+    cache.cachedEnvAccessToken !== process.env.SPOTIFY_ACCESS_TOKEN) {
+    console.log("🔄 Spotify credentials changed in .env! Clearing in-memory cache...");
+    cache.accessToken = "";
+    cache.tokenExpiresAt = 0;
+    cache.playlists = null;
+    cache.tracks = {};
+    cache.expiresAt = 0;
+    cache.cachedRefreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
+    cache.cachedEnvAccessToken = process.env.SPOTIFY_ACCESS_TOKEN;
+}
+
+const now = Date.now();
+
+// Fetch public featured playlists or user playlists server-side
+try {
+    if (cache.playlists && now < cache.expiresAt) {
+        playlists = cache.playlists;
+        const firstPlaylist = playlists[0];
+        if (firstPlaylist) {
+            currentPlaylistId = firstPlaylist.id;
+            playlistName = firstPlaylist.name;
+            playlistImage = firstPlaylist.image;
+            tracks = cache.tracks[firstPlaylist.id] || [];
+        }
+        console.log("⚡ Loaded playlists and tracks from server-side cache");
+    } else {
+        const clientId = process.env.SPOTIFY_CLIENT_ID;
+        const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+        const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
+        const envAccessToken = process.env.SPOTIFY_ACCESS_TOKEN;
+
+        console.log("🔍 Spotify credentials check:");
+        console.log("  Client ID:", clientId ? "✓ Found" : "✗ Missing");
+        console.log("  Client Secret:", clientSecret ? "✓ Found" : "✗ Missing");
+        console.log("  Refresh Token:", refreshToken ? "✓ Found" : "✗ Missing");
+        console.log("  Direct Access Token:", envAccessToken ? "✓ Found" : "✗ Missing");
+
+        let accessToken = "";
+
+        // Get access token (check cache first)
+        if (cache.accessToken && now < cache.tokenExpiresAt) {
+            accessToken = cache.accessToken;
+        } else {
+            // 1. Try direct SPOTIFY_ACCESS_TOKEN (Highest priority for manual Postman testing)
+            if (envAccessToken) {
+                console.log("⚠️ Using direct SPOTIFY_ACCESS_TOKEN from .env");
+                accessToken = envAccessToken;
+                cache.accessToken = envAccessToken;
+                cache.tokenExpiresAt = now + 3600 * 1000; // Cache 1 hour
+            }
+            // 2. Try Refresh Token
+            else if (refreshToken && clientId && clientSecret) {
+                try {
+                    console.log("⚡ Refreshing Spotify access token via Refresh Token...");
+                    const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: new URLSearchParams({
+                            grant_type: "refresh_token",
+                            refresh_token: refreshToken,
+                            client_id: clientId,
+                            client_secret: clientSecret,
+                        }).toString(),
+                    });
+                    if (tokenRes.ok) {
+                        const tokenData = await tokenRes.json();
+                        accessToken = tokenData.access_token;
+                        cache.accessToken = tokenData.access_token;
+                        cache.tokenExpiresAt = now + (tokenData.expires_in - 60) * 1000;
+                        console.log("✓ Dynamic token refresh successful");
+                    } else {
+                        const errText = await tokenRes.text();
+                        console.error("❌ Spotify refresh token request failed:", tokenRes.status, errText);
+                    }
+                } catch (err) {
+                    console.error("❌ Token refresh error:", err);
+                }
+            }
+
+            // 3. Try Client Credentials fallback
+            if (!accessToken && clientId && clientSecret) {
+                try {
+                    console.log("⚡ Fetching Spotify token via Client Credentials...");
+                    const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: `grant_type=client_credentials&client_id=${clientId}&client_secret=${clientSecret}`,
+                    });
+                    if (tokenRes.ok) {
+                        const tokenData = await tokenRes.json();
+                        accessToken = tokenData.access_token;
+                        cache.accessToken = tokenData.access_token;
+                        cache.tokenExpiresAt = now + (tokenData.expires_in - 60) * 1000;
+                        console.log("✓ Client credentials token successful");
+                    }
+                } catch (err) {
+                    console.error("❌ Client credentials error:", err);
+                }
+            }
+        }
+
+        if (accessToken) {
+            console.log("✓ Access token active");
+            const headers = { Authorization: `Bearer ${accessToken}` };
+
+            // Hardcoded list of public playlist IDs to display
+            const publicPlaylistIds = [
+                "1DLm8CD1qeu8goenNGCQv6", // Custom playlist
+            ];
+
+            const playlistPromises = publicPlaylistIds.map(async (id) => {
+                try {
+                    const res = await fetch(
+                        `https://api.spotify.com/v1/playlists/${id}`,
+                        { headers },
+                    );
+                    if (res.ok) {
+                        const data = await res.json();
+                        return {
+                            id: data.id || "",
+                            name: data.name || "Unknown",
+                            image: data.images?.[0]?.url || "",
+                            trackCount: data.tracks?.total || 0,
+                        };
+                    } else {
+                        console.error(
+                            `❌ Failed to fetch playlist ${id}:`,
+                            res.status,
+                            res.statusText,
+                        );
+                    }
+                } catch (err) {
+                    console.error(`Error fetching playlist ${id}:`, err);
+                }
+                return null;
+            });
+
+            const fetchedPlaylists = await Promise.all(playlistPromises);
+            playlists = fetchedPlaylists.filter(
+                (p): p is SpotifyPlaylist => p !== null,
+            );
+
+            // Load first playlist's tracks
+            if (playlists.length > 0) {
+                const firstPlaylist = playlists[0];
+                currentPlaylistId = firstPlaylist.id;
+                playlistName = firstPlaylist.name;
+                playlistImage = firstPlaylist.image;
+
+                const tracksRes = await fetch(
+                    `https://api.spotify.com/v1/playlists/${firstPlaylist.id}/items?limit=50`,
+                    { headers },
+                );
+
+                if (tracksRes.ok) {
+                    const tracksData = await tracksRes.json();
+                    tracks = (tracksData.items || [])
+                        .map((item: any) => {
+                            const track =
+                                item.track && typeof item.track === "object"
+                                    ? item.track
+                                    : item.item;
+                            return {
+                                id: track?.id || "",
+                                name: track?.name || "Unknown",
+                                artists:
+                                    track?.artists
+                                        ?.map((a: any) => a.name)
+                                        .join(", ") || "Unknown",
+                                album: track?.album?.name || "Unknown",
+                                albumArt: track?.album?.images?.[0]?.url || "",
+                                duration: track?.duration_ms || 0,
+                                previewUrl: track?.preview_url,
+                            };
+                        })
+                        .filter((t: SpotifyTrack) => t.id);
+
+                    // Cache results
+                    cache.playlists = playlists;
+                    cache.tracks[firstPlaylist.id] = tracks;
+                    cache.expiresAt = now + 5 * 60 * 1000; // Cache for 5 minutes
+                } else {
+                    const errorData = await tracksRes.json().catch(() => ({}));
+                    console.error(
+                        "❌ Tracks fetch error:",
+                        tracksRes.status,
+                        tracksRes.statusText,
+                        errorData,
+                    );
+                }
+            }
+        }
+
+        if (playlists.length === 0) {
+            console.warn("⚠️ No Spotify playlists loaded.");
+        }
+    }
+} catch (err) {
+    console.error("Spotify fetch failed:", err);
+}
+
+function formatDuration(ms: number): string {
+    const min = Math.floor(ms / 60000);
+    const sec = Math.floor((ms % 60000) / 1000);
+    return `${min}:${sec.toString().padStart(2, "0")}`;
+}
+---
+
+<div
+    class="os-window closed"
+    id="win-spotify"
+    data-app="spotify"
+    style="width:800px;height:520px;"
+>
+    <div class="window-titlebar">
+        <div class="window-controls">
+            <button class="win-close"
+                ><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"
+                    ><line x1="3" y1="3" x2="9" y2="9"></line><line
+                        x1="9"
+                        y1="3"
+                        x2="3"
+                        y2="9"></line></svg
+                ></button
+            >
+            <button class="win-minimize"
+                ><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"
+                    ><line x1="2" y1="6" x2="10" y2="6"></line></svg
+                ></button
+            >
+            <button class="win-maximize"
+                ><svg
+                    viewBox="0 0 12 12"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    ><rect x="2" y="2" width="8" height="8" rx="1" fill="none"
+                    ></rect></svg
+                ></button
+            >
+        </div>
+        <span class="window-title">Spotify</span>
+        <div class="window-title-spacer"></div>
+    </div>
+    <div class="window-body spotify-body">
+        <!-- Sidebar -->
+        <div class="sp-sidebar">
+            <div class="sp-logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="#1db954"
+                    ><path
+                        d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"
+                    ></path></svg
+                >
+            </div>
+            <nav class="sp-nav">
+                <button class="sp-nav-item active">
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        ><path
+                            d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                        ></path></svg
+                    >
+                    Home
+                </button>
+                <button class="sp-nav-item">
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><circle cx="11" cy="11" r="8"></circle><line
+                            x1="21"
+                            y1="21"
+                            x2="16.65"
+                            y2="16.65"></line></svg
+                    >
+                    Search
+                </button>
+                <button class="sp-nav-item">
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><path
+                            d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+                        ></path></svg
+                    >
+                    Library
+                </button>
+            </nav>
+            <div class="sp-playlists">
+                <div class="sp-playlist-label">PLAYLISTS</div>
+                {
+                    playlists.length > 0 ? (
+                        playlists.map((playlist) => (
+                            <button
+                                class={`sp-playlist-item ${
+                                    playlist.id === currentPlaylistId
+                                        ? "active"
+                                        : ""
+                                }`}
+                                data-playlist-id={playlist.id}
+                            >
+                                {playlist.image ? (
+                                    <img
+                                        src={playlist.image}
+                                        alt=""
+                                        class="sp-playlist-img"
+                                        width="40"
+                                        height="40"
+                                    />
+                                ) : (
+                                    <div class="sp-playlist-img-placeholder">
+                                        🎵
+                                    </div>
+                                )}
+                                <div class="sp-playlist-info">
+                                    <span class="sp-playlist-name">
+                                        {playlist.name}
+                                    </span>
+                                    <span class="sp-playlist-meta">
+                                        {playlist.trackCount} tracks
+                                    </span>
+                                </div>
+                            </button>
+                        ))
+                    ) : (
+                        <p style="color: #b3b3b3; font-size: 12px; padding: 12px;">
+                            No playlists found. Check your Spotify API
+                            credentials.
+                        </p>
+                    )
+                }
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="sp-main">
+            <!-- Playlist header -->
+            <div class="sp-header">
+                {
+                    playlistImage ? (
+                        <img
+                            src={playlistImage}
+                            alt=""
+                            class="sp-header-art"
+                            width="120"
+                            height="120"
+                        />
+                    ) : (
+                        <div class="sp-header-art sp-header-art-placeholder">
+                            🎵
+                        </div>
+                    )
+                }
+                <div class="sp-header-info">
+                    <span class="sp-header-type">PLAYLIST</span>
+                    <h2 class="sp-header-title">{playlistName}</h2>
+                    <p class="sp-header-meta">
+                        {tracks.length} songs · Spotify
+                    </p>
+                </div>
+            </div>
+
+            <!-- Track list -->
+            <div class="sp-tracklist" id="sp-tracklist">
+                <div class="sp-track-header">
+                    <span class="sp-col-num">#</span>
+                    <span class="sp-col-title">TITLE</span>
+                    <span class="sp-col-album">ALBUM</span>
+                    <span class="sp-col-duration">
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            ><circle cx="12" cy="12" r="10"></circle><polyline
+                                points="12 6 12 12 16 14"></polyline></svg
+                        >
+                    </span>
+                </div>
+                {
+                    tracks.length > 0 ? (
+                        tracks.map((track, i) => (
+                            <button
+                                class="sp-track-row"
+                                data-index={i}
+                                data-preview={track.previewUrl || ""}
+                                data-name={track.name}
+                                data-artist={track.artists}
+                                data-art={track.albumArt}
+                                data-id={track.id}
+                            >
+                                <span class="sp-col-num">
+                                    <span class="sp-track-num">{i + 1}</span>
+                                    <svg
+                                        class="sp-track-play-icon"
+                                        width="14"
+                                        height="14"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                    >
+                                        <polygon points="5 3 19 12 5 21 5 3" />
+                                    </svg>
+                                </span>
+                                <span class="sp-col-title">
+                                    <img
+                                        src={track.albumArt}
+                                        alt=""
+                                        class="sp-track-art"
+                                        width="40"
+                                        height="40"
+                                        loading="lazy"
+                                    />
+                                    <span class="sp-track-info">
+                                        <span class="sp-track-name">
+                                            {track.name}
+                                        </span>
+                                        <span class="sp-track-artist">
+                                            {track.artists}
+                                        </span>
+                                    </span>
+                                </span>
+                                <span class="sp-col-album">{track.album}</span>
+                                <span class="sp-col-duration">
+                                    {formatDuration(track.duration)}
+                                </span>
+                            </button>
+                        ))
+                    ) : (
+                        <div class="sp-empty">
+                            <p>Could not load tracks from Spotify.</p>
+                            <p class="sp-empty-sub">
+                                Check your API keys in .env
+                            </p>
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+
+        <!-- Now Playing Bar -->
+        <div class="sp-player" id="sp-player">
+            <div class="sp-player-track">
+                <div class="sp-player-art-wrapper">
+                    <img
+                        src=""
+                        alt=""
+                        class="sp-player-art"
+                        id="sp-player-art"
+                        width="46"
+                        height="46"
+                    />
+                </div>
+                <div class="sp-player-info">
+                    <span class="sp-player-name" id="sp-player-name"
+                        >No track selected</span
+                    >
+                    <span class="sp-player-artist" id="sp-player-artist">—</span
+                    >
+                </div>
+            </div>
+            <div class="sp-player-controls">
+                <div class="sp-player-btns">
+                    <button class="sp-ctrl-btn" id="sp-shuffle" title="Shuffle">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            ><polyline points="16 3 21 3 21 8"></polyline><line
+                                x1="4"
+                                y1="20"
+                                x2="21"
+                                y2="3"></line><polyline
+                                points="21 16 21 21 16 21"></polyline><line
+                                x1="15"
+                                y1="15"
+                                x2="21"
+                                y2="21"></line><line x1="4" y1="4" x2="9" y2="9"
+                            ></line></svg
+                        >
+                    </button>
+                    <button class="sp-ctrl-btn" id="sp-prev" title="Previous">
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            ><path d="M19 20L9 12l10-8v16zM5 4h2v16H5V4z"
+                            ></path></svg
+                        >
+                    </button>
+                    <button
+                        class="sp-ctrl-btn sp-play-btn"
+                        id="sp-play"
+                        title="Play"
+                    >
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            class="sp-icon-play"
+                            ><polygon points="5 3 19 12 5 21 5 3"
+                            ></polygon></svg
+                        >
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            class="sp-icon-pause"
+                            style="display:none;"
+                            ><rect x="5" y="3" width="4" height="18"
+                            ></rect><rect x="15" y="3" width="4" height="18"
+                            ></rect></svg
+                        >
+                    </button>
+                    <button class="sp-ctrl-btn" id="sp-next" title="Next">
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            ><path d="M5 4l10 8-10 8V4zM17 4h2v16h-2V4z"
+                            ></path></svg
+                        >
+                    </button>
+                    <button class="sp-ctrl-btn" id="sp-repeat" title="Repeat">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            ><polyline points="17 1 21 5 17 9"></polyline><path
+                                d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline
+                                points="7 23 3 19 7 15"></polyline><path
+                                d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg
+                        >
+                    </button>
+                </div>
+                <div class="sp-progress-row">
+                    <span class="sp-time" id="sp-time-current">0:00</span>
+                    <div class="sp-progress-bar" id="sp-progress-bar">
+                        <div class="sp-progress-fill" id="sp-progress-fill">
+                        </div>
+                        <div class="sp-progress-knob" id="sp-progress-knob">
+                        </div>
+                    </div>
+                    <span class="sp-time" id="sp-time-total">0:30</span>
+                </div>
+            </div>
+            <div class="sp-player-extra">
+                <div class="sp-volume">
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        ><polygon
+                            points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"
+                            fill="currentColor"
+                            opacity="0.4"></polygon><path
+                            d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg
+                    >
+                    <div class="sp-volume-bar" id="sp-volume-bar">
+                        <div
+                            class="sp-volume-fill"
+                            id="sp-volume-fill"
+                            style="width:75%;"
+                        >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .spotify-body {
+        display: flex;
+        flex-direction: column;
+        background: #000;
+        font-size: 13px;
+        color: #fff;
+    }
+
+    /* ── Sidebar ── */
+    .sp-sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 72px;
+        width: 200px;
+        background: #000;
+        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        flex-direction: column;
+        padding: 16px 0;
+        z-index: 1;
+    }
+
+    .sp-logo {
+        padding: 0 20px 20px;
+    }
+
+    .sp-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 0 8px;
+    }
+
+    .sp-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        border: none;
+        background: none;
+        color: #b3b3b3;
+        font-family: var(--font-ui);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.15s;
+        text-align: left;
+    }
+
+    .sp-nav-item:hover {
+        color: #fff;
+    }
+    .sp-nav-item.active {
+        color: #fff;
+    }
+
+    .sp-playlists {
+        margin-top: 20px;
+        padding: 0 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 16px;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .sp-playlist-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        color: #b3b3b3;
+        padding: 0 12px 12px;
+    }
+
+    .sp-playlist-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .sp-playlist-item:hover,
+    .sp-playlist-item.active {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .sp-playlist-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        object-fit: cover;
+    }
+
+    .sp-playlist-img-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .sp-playlist-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow: hidden;
+    }
+
+    .sp-playlist-name {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sp-playlist-meta {
+        font-size: 11px;
+        color: #b3b3b3;
+    }
+
+    /* ── Main area ── */
+    .sp-main {
+        margin-left: 200px;
+        margin-bottom: 72px;
+        flex: 1;
+        overflow-y: auto;
+        background: linear-gradient(180deg, #1a1a2e 0%, #121212 300px);
+    }
+
+    .sp-header {
+        display: flex;
+        align-items: flex-end;
+        gap: 20px;
+        padding: 32px 28px 24px;
+        background: linear-gradient(
+            180deg,
+            rgba(29, 185, 84, 0.25) 0%,
+            transparent 100%
+        );
+    }
+
+    .sp-header-art {
+        width: 120px;
+        height: 120px;
+        border-radius: 6px;
+        object-fit: cover;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .sp-header-art-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 40px;
+    }
+
+    .sp-header-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .sp-header-type {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .sp-header-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.5px;
+        line-height: 1.1;
+    }
+
+    .sp-header-meta {
+        font-size: 12px;
+        color: #b3b3b3;
+        margin-top: 4px;
+    }
+
+    /* ── Tracklist ── */
+    .sp-tracklist {
+        padding: 0 20px 20px;
+    }
+
+    .sp-track-header {
+        display: grid;
+        grid-template-columns: 36px 1fr 1fr 60px;
+        gap: 12px;
+        padding: 8px 12px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: #b3b3b3;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+
+    .sp-track-row {
+        display: grid;
+        grid-template-columns: 36px 1fr 1fr 60px;
+        gap: 12px;
+        padding: 6px 12px;
+        border: none;
+        background: none;
+        color: #b3b3b3;
+        font-family: var(--font-ui);
+        font-size: 13px;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: background 0.15s;
+        align-items: center;
+        text-align: left;
+        width: 100%;
+    }
+
+    .sp-track-row:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .sp-track-row.playing {
+        background: rgba(29, 185, 84, 0.12);
+    }
+
+    .sp-track-row.playing .sp-track-name {
+        color: #1db954;
+    }
+
+    .sp-col-num {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+    }
+
+    .sp-track-play-icon {
+        display: none;
+        color: #fff;
+    }
+
+    .sp-track-row:hover .sp-track-num {
+        display: none;
+    }
+    .sp-track-row:hover .sp-track-play-icon {
+        display: block;
+    }
+
+    .sp-col-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        overflow: hidden;
+    }
+
+    .sp-track-art {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .sp-track-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow: hidden;
+    }
+
+    .sp-track-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sp-track-artist {
+        font-size: 11.5px;
+        color: #b3b3b3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sp-col-album {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sp-col-duration {
+        font-size: 12px;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    /* ── Player bar ── */
+    .sp-player {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 72px;
+        background: #181818;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        align-items: center;
+        padding: 0 16px;
+        z-index: 2;
+    }
+
+    .sp-player-track {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sp-player-art-wrapper {
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+    }
+
+    .sp-player-art {
+        width: 100%;
+        height: 100%;
+        border-radius: 4px;
+        object-fit: cover;
+        display: none;
+    }
+
+    .sp-player-art[src]:not([src=""]) {
+        display: block;
+    }
+
+    .sp-player-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow: hidden;
+    }
+
+    .sp-player-name {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sp-player-artist {
+        font-size: 10.5px;
+        color: #b3b3b3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sp-player-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .sp-player-btns {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .sp-ctrl-btn {
+        background: none;
+        border: none;
+        color: #b3b3b3;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.15s;
+    }
+
+    .sp-ctrl-btn:hover {
+        color: #fff;
+        transform: scale(1.08);
+    }
+
+    .sp-play-btn {
+        width: 34px;
+        height: 34px;
+        background: #fff;
+        color: #000 !important;
+        border-radius: 50%;
+    }
+
+    .sp-play-btn:hover {
+        transform: scale(1.08);
+        background: #fff;
+    }
+
+    .sp-progress-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .sp-time {
+        font-size: 10.5px;
+        color: #b3b3b3;
+        min-width: 32px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sp-progress-bar {
+        flex: 1;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 2px;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .sp-progress-bar:hover {
+        height: 6px;
+    }
+
+    .sp-progress-fill {
+        height: 100%;
+        background: #b3b3b3;
+        border-radius: 2px;
+        width: 0%;
+        transition: background 0.15s;
+    }
+
+    .sp-progress-bar:hover .sp-progress-fill {
+        background: #1db954;
+    }
+
+    .sp-progress-knob {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #fff;
+        position: absolute;
+        top: 50%;
+        left: 0%;
+        transform: translate(-50%, -50%);
+        display: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .sp-progress-bar:hover .sp-progress-knob {
+        display: block;
+    }
+
+    .sp-player-extra {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .sp-volume {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #b3b3b3;
+    }
+
+    .sp-volume-bar {
+        width: 80px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 2px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .sp-volume-fill {
+        height: 100%;
+        background: #b3b3b3;
+        border-radius: 2px;
+        transition: background 0.15s;
+    }
+
+    .sp-volume-bar:hover .sp-volume-fill {
+        background: #1db954;
+    }
+
+    /* ── Empty state ── */
+    .sp-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: #b3b3b3;
+    }
+
+    .sp-empty p {
+        margin-bottom: 4px;
+    }
+    .sp-empty-sub {
+        font-size: 11px;
+        opacity: 0.6;
+    }
+</style>
+
+<script>
+    interface Track {
+        id: string;
+        name: string;
+        artists: string;
+        album: string;
+        albumArt: string;
+        duration: number;
+        previewUrl: string | null;
+    }
+
+    let spotifyPlayer: any = null;
+    let spotifyDeviceId = "";
+    let cachedAccessToken = "";
+    let tokenExpirationTime = 0;
+
+    // Playback state variables shared at module level
+    let audio: HTMLAudioElement | null = null;
+    let currentIndex = -1;
+    let isPlaying = false;
+    let isUsingSDK = false;
+    let progressInterval: number | null = null;
+    let sdkProgressInterval: number | null = null;
+    let currentSDKPosition = 0;
+    let currentSDKDuration = 0;
+
+    async function getAccessToken() {
+        const now = Date.now();
+        if (cachedAccessToken && now < tokenExpirationTime) {
+            return cachedAccessToken;
+        }
+        try {
+            const res = await fetch("/api/spotify/token");
+            if (!res.ok) throw new Error("Failed to fetch token proxy");
+            const data = await res.json();
+            cachedAccessToken = data.accessToken;
+            tokenExpirationTime = now + (data.expiresIn - 300) * 1000;
+            return cachedAccessToken;
+        } catch (err) {
+            console.error("Error fetching access token:", err);
+            return "";
+        }
+    }
+
+    function formatDuration(ms: number): string {
+        const min = Math.floor(ms / 60000);
+        const sec = Math.floor((ms % 60000) / 1000);
+        return `${min}:${sec.toString().padStart(2, "0")}`;
+    }
+
+    async function loadPlaylist(playlistId: string) {
+        try {
+            const response = await fetch(
+                `/api/spotify/playlist/${encodeURIComponent(playlistId)}.json`,
+            );
+            if (!response.ok) throw new Error("Failed to load playlist");
+
+            const data = await response.json();
+            const tracks: Track[] = data.tracks;
+
+            // Update header
+            const headerArt = document.querySelector(
+                ".sp-header-art",
+            ) as HTMLImageElement;
+            const headerTitle = document.querySelector(".sp-header-title");
+            const headerMeta = document.querySelector(".sp-header-meta");
+
+            if (headerArt && data.image) {
+                headerArt.src = data.image;
+                headerArt.style.display = "block";
+            }
+            if (headerTitle) headerTitle.textContent = data.name;
+            if (headerMeta)
+                headerMeta.textContent = `${tracks.length} songs · Spotify`;
+
+            // Update sidebar
+            const playlistItems =
+                document.querySelectorAll(".sp-playlist-item");
+            playlistItems.forEach((item) => {
+                item.classList.remove("active");
+                if (item.getAttribute("data-playlist-id") === playlistId) {
+                    item.classList.add("active");
+                }
+            });
+
+            // Rebuild track list
+            const tracklist = document.getElementById("sp-tracklist");
+            if (!tracklist) return;
+
+            const header = tracklist.querySelector(".sp-track-header");
+            tracklist.innerHTML = "";
+            if (header) tracklist.appendChild(header);
+
+            if (tracks.length > 0) {
+                tracks.forEach((track, i) => {
+                    const button = document.createElement("button");
+                    button.className = "sp-track-row";
+                    button.dataset.index = String(i);
+                    button.dataset.preview = track.previewUrl || "";
+                    button.dataset.name = track.name;
+                    button.dataset.artist = track.artists;
+                    button.dataset.art = track.albumArt;
+                    button.dataset.id = track.id;
+
+                    button.innerHTML = `
+                        <span class="sp-col-num">
+                            <span class="sp-track-num">${i + 1}</span>
+                            <svg class="sp-track-play-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="5 3 19 12 5 21 5 3" />
+                            </svg>
+                        </span>
+                        <span class="sp-col-title">
+                            <img src="${track.albumArt}" alt="" class="sp-track-art" width="40" height="40" loading="lazy" />
+                            <span class="sp-track-info">
+                                <span class="sp-track-name">${track.name}</span>
+                                <span class="sp-track-artist">${track.artists}</span>
+                            </span>
+                        </span>
+                        <span class="sp-col-album">${track.album}</span>
+                        <span class="sp-col-duration">${formatDuration(track.duration)}</span>
+                    `;
+                    tracklist.appendChild(button);
+                });
+            } else {
+                const empty = document.createElement("div");
+                empty.className = "sp-empty";
+                empty.innerHTML = "<p>No tracks in this playlist.</p>";
+                tracklist.appendChild(empty);
+            }
+
+            // Reinitialize player with new tracks
+            initSpotify();
+        } catch (error) {
+            console.error("Error loading playlist:", error);
+        }
+    }
+
+    function initPlaylistClicks() {
+        const playlistItems = document.querySelectorAll(".sp-playlist-item");
+        playlistItems.forEach((item) => {
+            item.addEventListener("click", () => {
+                const playlistId = item.getAttribute("data-playlist-id");
+                if (playlistId) {
+                    loadPlaylist(playlistId);
+                }
+            });
+        });
+    }
+
+    function initSpotify() {
+        const rows = document.querySelectorAll(".sp-track-row");
+        const playBtn = document.getElementById("sp-play");
+        const prevBtn = document.getElementById("sp-prev");
+        const nextBtn = document.getElementById("sp-next");
+        const playerArt = document.getElementById(
+            "sp-player-art",
+        ) as HTMLImageElement;
+        const playerName = document.getElementById("sp-player-name");
+        const playerArtist = document.getElementById("sp-player-artist");
+        const progressFill = document.getElementById("sp-progress-fill");
+        const progressKnob = document.getElementById("sp-progress-knob");
+        const progressBar = document.getElementById("sp-progress-bar");
+        const timeCurrent = document.getElementById("sp-time-current");
+        const timeTotal = document.getElementById("sp-time-total");
+        const iconPlay = document.querySelector(".sp-icon-play") as HTMLElement;
+        const iconPause = document.querySelector(
+            ".sp-icon-pause",
+        ) as HTMLElement;
+        const volumeBar = document.getElementById("sp-volume-bar");
+        const volumeFill = document.getElementById("sp-volume-fill");
+
+        if (!playBtn || !rows.length) return;
+
+        function formatTime(sec: number) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m}:${s.toString().padStart(2, "0")}`;
+        }
+
+        // Set up callback for Spotify Web Playback SDK updates
+        (window as any).handleSpotifyStateChanged = (state: any) => {
+            if (!state) return;
+            isUsingSDK = true;
+            const currentTrack = state.track_window.current_track;
+            const isPaused = state.paused;
+            const position = state.position;
+            const duration = state.duration;
+
+            // Sync active row in tracks UI list
+            rows.forEach((r, idx) => {
+                r.classList.remove("playing");
+                if ((r as HTMLElement).dataset.id === currentTrack.id) {
+                    r.classList.add("playing");
+                    currentIndex = idx;
+                }
+            });
+
+            // Update UI elements
+            if (playerArt && currentTrack.album?.images?.[0]?.url) {
+                playerArt.src = currentTrack.album.images[0].url;
+                playerArt.style.display = "block";
+            }
+            if (playerName) playerName.textContent = currentTrack.name;
+            if (playerArtist)
+                playerArtist.textContent = currentTrack.artists
+                    .map((a: any) => a.name)
+                    .join(", ");
+
+            isPlaying = !isPaused;
+            updatePlayIcon();
+
+            if (timeTotal) timeTotal.textContent = formatTime(duration / 1000);
+
+            // Start real-time timer updates for the progress bar
+            updateSDKProgress(position, duration, isPaused);
+        };
+
+        function updateSDKProgress(
+            positionMs: number,
+            durationMs: number,
+            isPaused: boolean,
+        ) {
+            if (sdkProgressInterval) clearInterval(sdkProgressInterval);
+            currentSDKPosition = positionMs;
+            currentSDKDuration = durationMs;
+
+            const updateUI = () => {
+                const pct =
+                    (currentSDKPosition / currentSDKDuration) * 100 || 0;
+                if (progressFill) progressFill.style.width = `${pct}%`;
+                if (progressKnob) progressKnob.style.left = `${pct}%`;
+                if (timeCurrent)
+                    timeCurrent.textContent = formatTime(
+                        currentSDKPosition / 1000,
+                    );
+            };
+
+            updateUI();
+
+            if (!isPaused) {
+                sdkProgressInterval = window.setInterval(() => {
+                    currentSDKPosition += 250;
+                    if (currentSDKPosition > currentSDKDuration) {
+                        currentSDKPosition = currentSDKDuration;
+                        clearInterval(sdkProgressInterval!);
+                    }
+                    updateUI();
+                }, 250);
+            }
+        }
+
+        async function playTrack(index: number) {
+            const row = rows[index] as HTMLElement;
+            if (!row) return;
+
+            const trackId = row.dataset.id || "";
+            const name = row.dataset.name || "";
+            const artist = row.dataset.artist || "";
+            const art = row.dataset.art || "";
+
+            // Stop local HTML5 Audio player if active (safeguard, though disabled)
+            if (audio) {
+                audio.pause();
+                audio = null;
+            }
+            if (progressInterval) clearInterval(progressInterval);
+
+            // Attempt playback via Spotify Web Playback SDK if ready
+            if (spotifyDeviceId && trackId) {
+                try {
+                    const token = await getAccessToken();
+                    console.log(`⚡ Sending play request to Spotify SDK Device ID: ${spotifyDeviceId} for track: ${trackId}`);
+                    const res = await fetch(
+                        `https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                                uris: [`spotify:track:${trackId}`],
+                            }),
+                        },
+                    );
+                    if (res.ok) {
+                        console.log("✓ Spotify SDK started playback successfully:", trackId);
+                        
+                        // Sync UI immediately (state updates will also sync)
+                        rows.forEach((r) => r.classList.remove("playing"));
+                        row.classList.add("playing");
+                        currentIndex = index;
+                        if (playerArt) {
+                            playerArt.src = art;
+                            playerArt.style.display = art ? "block" : "none";
+                        }
+                        if (playerName) playerName.textContent = name;
+                        if (playerArtist) playerArtist.textContent = artist;
+                        isPlaying = true;
+                        updatePlayIcon();
+                    } else {
+                        const errText = await res.text();
+                        console.error("❌ Spotify SDK playback failed:", res.status, res.statusText, errText);
+                        alert(`Spotify SDK Playback Failed (${res.status}): ${res.statusText || errText || 'Is your account Premium?'}`);
+                    }
+                } catch (err) {
+                    console.error("❌ SDK playback fetch error:", err);
+                    alert(`Playback fetch error: ${err}`);
+                }
+            } else {
+                console.warn("⚠️ Spotify Web Playback SDK is not active or ready.");
+                alert(`Cannot play: Spotify SDK device not ready. Device ID: ${spotifyDeviceId || 'None'}, Track ID: ${trackId || 'None'}`);
+            }
+        }
+
+        function updatePlayIcon() {
+            if (!iconPlay || !iconPause) return;
+            iconPlay.style.display = isPlaying ? "none" : "";
+            iconPause.style.display = isPlaying ? "" : "none";
+        }
+
+        // Track click - always bind to the active rows
+        rows.forEach((row, i) => {
+            row.addEventListener("click", () => playTrack(i));
+        });
+
+        // Initialize global player control event listeners only once
+        if ((window as any).spotifyControlsInitialized) return;
+        (window as any).spotifyControlsInitialized = true;
+
+        // Play/Pause button
+        playBtn.addEventListener("click", () => {
+            if (spotifyPlayer) {
+                spotifyPlayer.togglePlay();
+            } else {
+                alert("Spotify SDK is not connected.");
+            }
+        });
+
+        // Prev/Next buttons
+        prevBtn?.addEventListener("click", () => {
+            if (spotifyPlayer) {
+                spotifyPlayer.previousTrack();
+            } else {
+                if (currentIndex > 0) playTrack(currentIndex - 1);
+            }
+        });
+        nextBtn?.addEventListener("click", () => {
+            if (spotifyPlayer) {
+                spotifyPlayer.nextTrack();
+            } else {
+                if (currentIndex < rows.length - 1) playTrack(currentIndex + 1);
+            }
+        });
+
+        // Progress seek
+        progressBar?.addEventListener("click", (e) => {
+            if (spotifyPlayer) {
+                const rect = progressBar.getBoundingClientRect();
+                const pct = (e.clientX - rect.left) / rect.width;
+                spotifyPlayer.seek(pct * currentSDKDuration);
+            }
+        });
+
+        // Volume control
+        volumeBar?.addEventListener("click", (e) => {
+            if (spotifyPlayer) {
+                const rect = volumeBar.getBoundingClientRect();
+                const pct = Math.max(
+                    0,
+                    Math.min(1, (e.clientX - rect.left) / rect.width),
+                );
+                spotifyPlayer.setVolume(pct);
+                if (volumeFill) volumeFill.style.width = `${pct * 100}%`;
+            }
+        });
+    }
+
+    // Initialize on page load
+    (async () => {
+        initPlaylistClicks();
+        initSpotify();
+    })();
+
+    // Initialize Spotify Web Playback SDK
+    (window as any).onSpotifyWebPlaybackSDKReady = () => {
+        const player = new (window as any).Spotify.Player({
+            name: "JuicyOS Web Player",
+            getOAuthToken: async (cb: any) => {
+                const token = await getAccessToken();
+                cb(token);
+            },
+            volume: 0.5,
+        });
+
+        player.addListener("ready", ({ device_id }: any) => {
+            console.log(
+                "✓ Spotify Web Playback SDK Ready with Device ID:",
+                device_id,
+            );
+            spotifyDeviceId = device_id;
+        });
+
+        player.addListener("not_ready", ({ device_id }: any) => {
+            console.log("Spotify Device ID is offline:", device_id);
+            spotifyDeviceId = "";
+        });
+
+        player.addListener("player_state_changed", (state: any) => {
+            if ((window as any).handleSpotifyStateChanged) {
+                (window as any).handleSpotifyStateChanged(state);
+            }
+        });
+
+        player.addListener("account_error", ({ message }: any) => {
+            console.error(
+                "Spotify Account Error (SDK streaming requires Spotify Premium):",
+                message,
+            );
+        });
+
+        player.connect().then((success: boolean) => {
+            if (success) {
+                console.log(
+                    "✓ Successfully connected to Spotify Web Playback SDK",
+                );
+            }
+        });
+
+        spotifyPlayer = player;
+    };
+
+    // Load Spotify SDK script dynamically
+    if (!document.getElementById("spotify-sdk-script")) {
+        const script = document.createElement("script");
+        script.id = "spotify-sdk-script";
+        script.src = "https://sdk.scdn.co/spotify-player.js";
+        script.async = true;
+        document.body.appendChild(script);
+    }
+</script>

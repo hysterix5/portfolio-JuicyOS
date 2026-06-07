@@ -1,0 +1,738 @@
+---
+/* Text Editor App — Skills & Resume (VS Code-like) */
+---
+
+<div
+  class="os-window closed"
+  id="win-editor"
+  data-app="editor"
+  style="width:760px;height:500px;"
+>
+  <div class="window-titlebar">
+    <div class="window-controls">
+      <button class="win-close"
+        ><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"
+          ><line x1="3" y1="3" x2="9" y2="9"></line><line
+            x1="9"
+            y1="3"
+            x2="3"
+            y2="9"></line></svg
+        ></button
+      >
+      <button class="win-minimize"
+        ><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"
+          ><line x1="2" y1="6" x2="10" y2="6"></line></svg
+        ></button
+      >
+      <button class="win-maximize"
+        ><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.5"
+          ><rect x="2" y="2" width="8" height="8" rx="1" fill="none"
+          ></rect></svg
+        ></button
+      >
+    </div>
+    <span class="window-title">JuicyCode — resume.md</span>
+    <div class="window-title-spacer"></div>
+  </div>
+  <div class="window-body editor-body">
+    <!-- Sidebar file tree -->
+    <div class="editor-sidebar">
+      <div class="editor-sidebar-header">EXPLORER</div>
+      <div class="editor-tree">
+        <div class="tree-section">
+          <div class="tree-folder open">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              ><polyline points="6 9 12 15 18 9"></polyline></svg
+            >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="#e8a838"
+              stroke="none"
+              ><path
+                d="M2 6a2 2 0 012-2h5l2 2h9a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+              ></path></svg
+            >
+            portfolio
+          </div>
+          <div class="tree-items">
+            <button class="tree-file active" data-file="resume">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#58a6ff"
+                stroke-width="2"
+                ><path
+                  d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+                ></path></svg
+              >
+              resume.md
+            </button>
+            <button class="tree-file" data-file="skills">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#d29922"
+                stroke-width="2"
+                ><path
+                  d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+                ></path></svg
+              >
+              skills.json
+            </button>
+            <button class="tree-file" data-file="experience">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#3fb950"
+                stroke-width="2"
+                ><path
+                  d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+                ></path></svg
+              >
+              experience.yml
+            </button>
+            <button class="tree-file" data-file="education">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#bc8cff"
+                stroke-width="2"
+                ><path
+                  d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+                ></path></svg
+              >
+              education.md
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Editor main -->
+    <div class="editor-main">
+      <!-- Tabs -->
+      <div class="editor-tabs" id="editor-tabs">
+        <button class="editor-tab active" data-file="resume">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#58a6ff"
+            stroke-width="2"
+            ><path
+              d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+            ></path></svg
+          >
+          resume.md
+        </button>
+        <button class="editor-tab" data-file="skills">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#d29922"
+            stroke-width="2"
+            ><path
+              d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+            ></path></svg
+          >
+          skills.json
+        </button>
+        <button class="editor-tab" data-file="experience">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#3fb950"
+            stroke-width="2"
+            ><path
+              d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+            ></path></svg
+          >
+          experience.yml
+        </button>
+        <button class="editor-tab" data-file="education">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#bc8cff"
+            stroke-width="2"
+            ><path
+              d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+            ></path></svg
+          >
+          education.md
+        </button>
+      </div>
+      <!-- Code area -->
+      <div class="editor-code" id="editor-code">
+        <!-- Content rendered by JS -->
+      </div>
+      <!-- Status bar -->
+      <div class="editor-statusbar">
+        <div class="editor-status-left">
+          <span class="editor-status-item">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"></path></svg
+            >
+            main
+          </span>
+        </div>
+        <div class="editor-status-right">
+          <span class="editor-status-item" id="editor-lang">Markdown</span>
+          <span class="editor-status-item">UTF-8</span>
+          <span class="editor-status-item" id="editor-lines">Ln 1, Col 1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .editor-body {
+    display: flex;
+    background: #1e1e2e;
+    font-size: 13px;
+  }
+
+  /* Sidebar */
+  .editor-sidebar {
+    width: 200px;
+    background: #181825;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .editor-sidebar-header {
+    padding: 10px 16px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  .tree-folder {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .tree-items {
+    padding-left: 8px;
+  }
+
+  .tree-file {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 4px 20px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all var(--transition-fast);
+  }
+
+  .tree-file:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .tree-file.active {
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--text-primary);
+  }
+
+  /* Main editor */
+  .editor-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Tabs */
+  .editor-tabs {
+    display: flex;
+    background: #1e1e2e;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    overflow-x: auto;
+  }
+
+  .editor-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .editor-tab:hover {
+    color: var(--text-secondary);
+  }
+
+  .editor-tab.active {
+    color: var(--text-primary);
+    background: #1e1e3a;
+    border-bottom-color: var(--accent-primary);
+  }
+
+  /* Code area */
+  .editor-code {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.75;
+    background: #1e1e2e;
+  }
+
+  .code-line {
+    display: flex;
+    padding: 0 16px;
+    min-height: 23px;
+  }
+
+  .code-line:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .line-num {
+    width: 40px;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.15);
+    padding-right: 16px;
+    flex-shrink: 0;
+    user-select: none;
+    font-size: 12px;
+  }
+
+  .line-content {
+    flex: 1;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Syntax highlighting classes */
+  .syn-heading {
+    color: #f85149;
+    font-weight: 700;
+  }
+  .syn-heading2 {
+    color: #d29922;
+    font-weight: 600;
+  }
+  .syn-heading3 {
+    color: #58a6ff;
+    font-weight: 600;
+  }
+  .syn-bold {
+    color: #f0f0f5;
+    font-weight: 700;
+  }
+  .syn-key {
+    color: #7c3aed;
+  }
+  .syn-string {
+    color: #3fb950;
+  }
+  .syn-number {
+    color: #d29922;
+  }
+  .syn-comment {
+    color: #6b7280;
+    font-style: italic;
+  }
+  .syn-bracket {
+    color: #888;
+  }
+  .syn-bullet {
+    color: #bc8cff;
+  }
+  .syn-link {
+    color: #58a6ff;
+    text-decoration: underline;
+  }
+  .syn-tag {
+    color: #39c5cf;
+  }
+  .syn-separator {
+    color: #444;
+  }
+
+  /* Status bar */
+  .editor-statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 12px;
+    background: #181825;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .editor-status-left,
+  .editor-status-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .editor-status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+</style>
+
+<script>
+  function initEditor() {
+    const codeArea = document.getElementById("editor-code");
+    const tabs = document.querySelectorAll(".editor-tab");
+    const treeFiles = document.querySelectorAll(".tree-file");
+    const titleEl = document.querySelector("#win-editor .window-title");
+    const langEl = document.getElementById("editor-lang");
+    const linesEl = document.getElementById("editor-lines");
+
+    if (!codeArea) return;
+
+    const files: Record<string, { content: string; lang: string }> = {
+      resume: {
+        lang: "Markdown",
+        content: `# Joseph Mel Resty Denopol — Full-Stack Developer
+
+## Professional Summary
+---
+A dedicated Full-Stack Developer with hands-on
+experience building dynamic web and mobile
+applications using Laravel, Flutter, and Nuxt.js.
+
+Proven track record in public sector compliance
+systems and enterprise application development
+with a strong focus on data management, backend
+security, and database optimization.
+
+## Core Competencies
+---
+- **Languages**: PHP, Dart, JavaScript, C++, C#, Python
+- **Frameworks**: Laravel, Flutter, Nuxt.js
+- **Databases**: Firebase, MySQL
+- **Tools**: Git, GitHub, RESTful APIs, Postman
+
+## Highlights
+---
+→ Enterprise SME platform development
+→ Government compliance system delivery
+→ AI integration for templating modules
+→ Security auditing & architecture upgrades
+
+## Contact
+---
+📧 denopolred@gmail.com
+🐙 github.com/hysterix5
+💼 linkedin.com/in/joseph-denopol-ba507a308
+🌐 denopscode-portfolio.vercel.app
+📍 Davao City, Philippines`,
+      },
+
+      skills: {
+        lang: "JSON",
+        content: `{
+  "developer": "Joseph Mel Resty Denopol",
+  "title": "Full-Stack Developer",
+  "location": "Davao City, Philippines",
+  "skills": {
+    "programming_languages": [
+      "PHP",
+      "Dart",
+      "JavaScript",
+      "C++",
+      "C#",
+      "Python",
+      "SQL",
+      "HTML/CSS"
+    ],
+    "frameworks": [
+      "Laravel",
+      "Flutter",
+      "Nuxt.js"
+    ],
+    "databases": [
+      "Firebase",
+      "MySQL"
+    ],
+    "tools_and_tech": [
+      "Git",
+      "GitHub",
+      "RESTful APIs",
+      "Postman"
+    ]
+  },
+  "soft_skills": [
+    "Problem Solving",
+    "Team Collaboration",
+    "Backend Security",
+    "Database Optimization"
+  ]
+}`,
+      },
+
+      experience: {
+        lang: "YAML",
+        content: `# Work Experience
+# ---
+
+- company: "EBOS Cloud Accountants"
+  role: "Back-end Developer"
+  period: "October 2025 - Present"
+  location: "Work From Home"
+  highlights:
+    - Developed and maintained features for
+      internal SME platform using Laravel
+    - Optimized system performance by
+      diagnosing and patching recurring
+      technical errors
+    - Integrated text-generative AI as a
+      tool for a templating module
+    - Scanned codebase and architecture
+      for security flaws, implementing
+      patches to prevent data breaches
+    - Upgraded core system architecture,
+      refactoring legacy codebase to
+      eliminate deprecated functions
+
+- company: "City Information Technology Center"
+  role: "Full-stack Developer Intern"
+  period: "February 2024 - July 2024"
+  location: "On-site"
+  highlights:
+    - Developed a Vices Regulation
+      Information System using Laravel
+      and Nuxt.js
+    - Digitized regulatory tracking and
+      enhanced public sector compliance
+    - Collaborated with cross-functional
+      team on system deployments and
+      external codebases`,
+      },
+
+      education: {
+        lang: "Markdown",
+        content: `# Education
+
+## 🎓 B.S. Information Technology
+**Davao City, Philippines** — 2020 - 2024
+
+### Relevant Coursework
+- Data Structures & Algorithms
+- Web Development
+- Database Systems
+- Software Engineering
+- Computer Networks
+- Operating Systems
+
+### Capstone Project
+- Vices Regulation Information System
+  for government compliance
+- Built with Laravel and Nuxt.js
+- Digitized regulatory tracking for
+  public sector compliance`,
+      },
+    };
+
+    function syntaxHighlight(content: string, lang: string): string {
+      const lines = content.split("\n");
+      return lines
+        .map((line, i) => {
+          let highlighted = escapeHtml(line);
+
+          if (lang === "Markdown") {
+            if (line.startsWith("# "))
+              highlighted = `<span class="syn-heading">${escapeHtml(line)}</span>`;
+            else if (line.startsWith("## "))
+              highlighted = `<span class="syn-heading2">${escapeHtml(line)}</span>`;
+            else if (line.startsWith("### "))
+              highlighted = `<span class="syn-heading3">${escapeHtml(line)}</span>`;
+            else if (line.startsWith("---"))
+              highlighted = `<span class="syn-separator">${escapeHtml(line)}</span>`;
+            else if (line.startsWith("- **")) {
+              highlighted = highlighted.replace(
+                /- \*\*(.*?)\*\*/,
+                '<span class="syn-bullet">-</span> <span class="syn-bold">$1</span>',
+              );
+            } else if (line.startsWith("- ") || line.startsWith("→ "))
+              highlighted = `<span class="syn-bullet">${escapeHtml(line.slice(0, 2))}</span>${escapeHtml(line.slice(2))}`;
+            else if (line.startsWith("*"))
+              highlighted = `<span class="syn-comment">${escapeHtml(line)}</span>`;
+
+            // Inline bold
+            highlighted = highlighted.replace(
+              /\*\*(.*?)\*\*/g,
+              '<span class="syn-bold">$1</span>',
+            );
+            // Emojis and links stay as-is
+          } else if (lang === "JSON") {
+            // Keys
+            highlighted = highlighted.replace(
+              /"([^"]+)":/g,
+              '<span class="syn-key">"$1"</span>:',
+            );
+            // String values
+            highlighted = highlighted.replace(
+              /: "([^"]+)"/g,
+              ': <span class="syn-string">"$1"</span>',
+            );
+            // Standalone strings in arrays
+            highlighted = highlighted.replace(
+              /^\s+"([^"]+)"(,?)$/gm,
+              (match) => {
+                return match.replace(
+                  /"([^"]+)"/g,
+                  '<span class="syn-string">"$1"</span>',
+                );
+              },
+            );
+            // Brackets
+            highlighted = highlighted.replace(
+              /([{}\[\]])/g,
+              '<span class="syn-bracket">$1</span>',
+            );
+          } else if (lang === "YAML") {
+            if (line.trimStart().startsWith("#"))
+              highlighted = `<span class="syn-comment">${escapeHtml(line)}</span>`;
+            else if (line.match(/^\s*- /)) {
+              highlighted = highlighted.replace(
+                /^(\s*)- /,
+                '$1<span class="syn-bullet">- </span>',
+              );
+            }
+            // Keys
+            highlighted = highlighted.replace(
+              /^(\s*)([a-zA-Z_]+):/gm,
+              '$1<span class="syn-key">$2</span>:',
+            );
+            // Quoted strings
+            highlighted = highlighted.replace(
+              /"([^"]+)"/g,
+              '<span class="syn-string">"$1"</span>',
+            );
+          }
+
+          return `<div class="code-line"><span class="line-num">${i + 1}</span><span class="line-content">${highlighted}</span></div>`;
+        })
+        .join("");
+    }
+
+    function escapeHtml(text: string) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function showFile(fileId: string) {
+      const file = files[fileId];
+      if (!file) return;
+
+      codeArea!.innerHTML = syntaxHighlight(file.content, file.lang);
+
+      // Update tabs
+      tabs.forEach((t) =>
+        t.classList.toggle(
+          "active",
+          (t as HTMLElement).dataset.file === fileId,
+        ),
+      );
+      treeFiles.forEach((t) =>
+        t.classList.toggle(
+          "active",
+          (t as HTMLElement).dataset.file === fileId,
+        ),
+      );
+
+      // Update status bar
+      if (langEl) langEl.textContent = file.lang;
+      if (linesEl) {
+        const lineCount = file.content.split("\n").length;
+        linesEl.textContent = `Ln 1, Col 1 · ${lineCount} lines`;
+      }
+
+      // Update title
+      const fileName =
+        fileId === "resume"
+          ? "resume.md"
+          : fileId === "skills"
+            ? "skills.json"
+            : fileId === "experience"
+              ? "experience.yml"
+              : "education.md";
+      if (titleEl) titleEl.textContent = `JuicyCode — ${fileName}`;
+    }
+
+    // Tab & tree click handlers
+    tabs.forEach((t) => {
+      t.addEventListener("click", () => {
+        const file = (t as HTMLElement).dataset.file;
+        if (file) showFile(file);
+      });
+    });
+
+    treeFiles.forEach((t) => {
+      t.addEventListener("click", () => {
+        const file = (t as HTMLElement).dataset.file;
+        if (file) showFile(file);
+      });
+    });
+
+    // Show resume by default
+    showFile("resume");
+  }
+
+  initEditor();
+</script>

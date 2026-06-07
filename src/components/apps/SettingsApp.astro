@@ -1,0 +1,628 @@
+---
+/* Settings App — Theme & Preferences */
+---
+
+<div class="os-window closed" id="win-settings" data-app="settings" style="width:660px;height:480px;">
+  <div class="window-titlebar">
+    <div class="window-controls">
+      <button class="win-close"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button>
+      <button class="win-minimize"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><line x1="2" y1="6" x2="10" y2="6"/></svg></button>
+      <button class="win-maximize"><svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="8" height="8" rx="1" fill="none"/></svg></button>
+    </div>
+    <span class="window-title">Settings</span>
+    <div class="window-title-spacer"></div>
+  </div>
+  <div class="window-body settings-body">
+    <div class="settings-sidebar">
+      <button class="settings-nav active" data-section="appearance">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        Appearance
+      </button>
+      <button class="settings-nav" data-section="wallpaper">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        Wallpaper
+      </button>
+      <button class="settings-nav" data-section="about">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        About
+      </button>
+    </div>
+    <div class="settings-main">
+      <!-- Appearance Section -->
+      <div class="settings-section active" id="section-appearance">
+        <h3 class="settings-title">Appearance</h3>
+        <p class="settings-desc">Customize your desktop look and feel</p>
+
+        <div class="settings-group">
+          <label class="settings-label">Accent Color</label>
+          <div class="accent-picker" id="accent-picker">
+            <button class="accent-swatch active" data-color="#7c3aed" style="background:#7c3aed;" title="Purple"></button>
+            <button class="accent-swatch" data-color="#3b82f6" style="background:#3b82f6;" title="Blue"></button>
+            <button class="accent-swatch" data-color="#e95420" style="background:#e95420;" title="Orange"></button>
+            <button class="accent-swatch" data-color="#22c55e" style="background:#22c55e;" title="Green"></button>
+            <button class="accent-swatch" data-color="#ec4899" style="background:#ec4899;" title="Pink"></button>
+            <button class="accent-swatch" data-color="#06b6d4" style="background:#06b6d4;" title="Cyan"></button>
+            <button class="accent-swatch" data-color="#eab308" style="background:#eab308;" title="Yellow"></button>
+            <button class="accent-swatch" data-color="#ef4444" style="background:#ef4444;" title="Red"></button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <label class="settings-label">Dock Style</label>
+          <div class="settings-toggle-group">
+            <button class="settings-toggle active" data-dock="center">Centered</button>
+            <button class="settings-toggle" data-dock="full">Full Width</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <label class="settings-label">Window Animations</label>
+          <div class="settings-switch-row">
+            <span class="settings-switch-label">Enable animations</span>
+            <label class="switch">
+              <input type="checkbox" id="toggle-animations" checked />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <label class="settings-label">Dock Magnification</label>
+          <div class="settings-switch-row">
+            <span class="settings-switch-label">Magnify on hover</span>
+            <label class="switch">
+              <input type="checkbox" id="toggle-magnify" checked />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wallpaper Section -->
+      <div class="settings-section" id="section-wallpaper">
+        <h3 class="settings-title">Wallpaper</h3>
+        <p class="settings-desc">Choose your desktop background</p>
+
+        <div class="wallpaper-grid" id="wallpaper-grid">
+          <button class="wallpaper-option active" data-wallpaper="default" title="Default">
+            <div class="wallpaper-preview" style="background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);"></div>
+            <span>Default</span>
+          </button>
+          <button class="wallpaper-option" data-wallpaper="sunset" title="Sunset">
+            <div class="wallpaper-preview" style="background: linear-gradient(135deg, #e95420, #c62828, #4a148c);"></div>
+            <span>Sunset</span>
+          </button>
+          <button class="wallpaper-option" data-wallpaper="ocean" title="Ocean">
+            <div class="wallpaper-preview" style="background: linear-gradient(135deg, #0d47a1, #006064, #1a237e);"></div>
+            <span>Ocean</span>
+          </button>
+          <button class="wallpaper-option" data-wallpaper="forest" title="Forest">
+            <div class="wallpaper-preview" style="background: linear-gradient(135deg, #1b5e20, #004d40, #0d1117);"></div>
+            <span>Forest</span>
+          </button>
+          <button class="wallpaper-option" data-wallpaper="aurora" title="Aurora">
+            <div class="wallpaper-preview" style="background: linear-gradient(135deg, #7c3aed, #06b6d4, #1a1a2e);"></div>
+            <span>Aurora</span>
+          </button>
+          <button class="wallpaper-option" data-wallpaper="midnight" title="Midnight">
+            <div class="wallpaper-preview" style="background: linear-gradient(135deg, #0a0a14, #1a1a2e, #0d1117);"></div>
+            <span>Midnight</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- About Section -->
+      <div class="settings-section" id="section-about">
+        <h3 class="settings-title">About</h3>
+        <p class="settings-desc">System information</p>
+
+        <div class="about-card">
+          <div class="about-logo">
+            <svg viewBox="0 0 80 80" width="56" height="56" fill="none">
+              <circle cx="40" cy="40" r="36" stroke="#7c3aed" stroke-width="2.5" fill="none" opacity="0.3"/>
+              <circle cx="40" cy="40" r="24" stroke="#a78bfa" stroke-width="2" fill="none" opacity="0.5"/>
+              <circle cx="40" cy="40" r="12" fill="#7c3aed" opacity="0.8"/>
+            </svg>
+            <div class="about-brand">
+              <span class="about-name">JuicyOS</span>
+              <span class="about-version">Version 1.0.0</span>
+            </div>
+          </div>
+
+          <div class="about-specs">
+            <div class="about-row">
+              <span class="about-key">OS Name</span>
+              <span class="about-val">JuicyOS Desktop</span>
+            </div>
+            <div class="about-row">
+              <span class="about-key">Kernel</span>
+              <span class="about-val">6.1.0-juicy</span>
+            </div>
+            <div class="about-row">
+              <span class="about-key">Desktop</span>
+              <span class="about-val">JuicyDE (GNOME-inspired)</span>
+            </div>
+            <div class="about-row">
+              <span class="about-key">Window Manager</span>
+              <span class="about-val">JuicyWM</span>
+            </div>
+            <div class="about-row">
+              <span class="about-key">Theme</span>
+              <span class="about-val">macOS-Inspired Dark</span>
+            </div>
+            <div class="about-row">
+              <span class="about-key">Built With</span>
+              <span class="about-val">Astro · TypeScript · CSS</span>
+            </div>
+            <div class="about-row">
+              <span class="about-key">Developer</span>
+              <span class="about-val">Joseph Mel Resty Denopol</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="about-footer">
+          <p>Made with 💜 by Joseph Mel Resty Denopol</p>
+          <p class="about-disclaimer">This is a portfolio website, not a real operating system.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .settings-body {
+    display: flex;
+    background: #0d1117;
+  }
+
+  .settings-sidebar {
+    width: 190px;
+    background: rgba(13, 17, 23, 0.95);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 12px 8px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .settings-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all var(--transition-fast);
+    text-align: left;
+  }
+
+  .settings-nav:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
+  }
+
+  .settings-nav.active {
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--text-accent);
+  }
+
+  .settings-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .settings-section {
+    display: none;
+  }
+
+  .settings-section.active {
+    display: block;
+    animation: fadeIn 0.3s var(--ease-out);
+  }
+
+  .settings-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .settings-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  .settings-group {
+    margin-bottom: 24px;
+  }
+
+  .settings-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Accent color picker */
+  .accent-picker {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .accent-swatch {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+  }
+
+  .accent-swatch:hover {
+    transform: scale(1.12);
+  }
+
+  .accent-swatch.active {
+    border-color: rgba(255,255,255,0.6);
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+  }
+
+  .accent-swatch.active::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+
+  /* Toggle group */
+  .settings-toggle-group {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 3px;
+    width: fit-content;
+  }
+
+  .settings-toggle {
+    padding: 6px 16px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all var(--transition-fast);
+  }
+
+  .settings-toggle.active {
+    background: rgba(124, 58, 237, 0.25);
+    color: var(--text-primary);
+  }
+
+  .settings-toggle:hover:not(.active) {
+    color: var(--text-secondary);
+  }
+
+  /* Switch */
+  .settings-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+
+  .settings-switch-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .switch {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    display: inline-block;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .switch-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.12);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .switch-slider::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    transition: transform var(--transition-fast);
+  }
+
+  .switch input:checked + .switch-slider {
+    background: var(--accent-primary);
+  }
+
+  .switch input:checked + .switch-slider::before {
+    transform: translateX(18px);
+  }
+
+  /* Wallpaper grid */
+  .wallpaper-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .wallpaper-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: none;
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .wallpaper-option:hover {
+    border-color: rgba(255,255,255,0.1);
+  }
+
+  .wallpaper-option.active {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+  }
+
+  .wallpaper-preview {
+    width: 100%;
+    aspect-ratio: 16/10;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* About */
+  .about-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .about-logo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .about-brand {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .about-name {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa, #e95420);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .about-version {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .about-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .about-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .about-key {
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+
+  .about-val {
+    font-size: 12.5px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .about-footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .about-footer p:first-child {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .about-disclaimer {
+    opacity: 0.5;
+    font-size: 11px !important;
+  }
+</style>
+
+<script>
+  function initSettings() {
+    const navBtns = document.querySelectorAll('.settings-nav');
+    const sections = document.querySelectorAll('.settings-section');
+    const accentSwatches = document.querySelectorAll('.accent-swatch');
+    const wallpaperOptions = document.querySelectorAll('.wallpaper-option');
+    const dockToggles = document.querySelectorAll('.settings-toggle[data-dock]');
+    const animToggle = document.getElementById('toggle-animations') as HTMLInputElement;
+    const magnifyToggle = document.getElementById('toggle-magnify') as HTMLInputElement;
+
+    // Section navigation
+    navBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sectionId = (btn as HTMLElement).dataset.section;
+        navBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        sections.forEach(s => {
+          s.classList.toggle('active', s.id === `section-${sectionId}`);
+        });
+      });
+    });
+
+    // Accent color
+    accentSwatches.forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        const color = (swatch as HTMLElement).dataset.color;
+        if (!color) return;
+        accentSwatches.forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+        document.documentElement.style.setProperty('--accent-primary', color);
+        // Generate lighter variant
+        document.documentElement.style.setProperty('--text-accent', color);
+      });
+    });
+
+    // Wallpaper
+    const wallpaperGradients: Record<string, string> = {
+      default: 'linear-gradient(135deg, #0f0c29 0%, #302b63 40%, #24243e 100%)',
+      sunset: 'linear-gradient(135deg, #e95420 0%, #c62828 40%, #4a148c 100%)',
+      ocean: 'linear-gradient(135deg, #0d47a1 0%, #006064 40%, #1a237e 100%)',
+      forest: 'linear-gradient(135deg, #1b5e20 0%, #004d40 40%, #0d1117 100%)',
+      aurora: 'linear-gradient(135deg, #7c3aed 0%, #06b6d4 40%, #1a1a2e 100%)',
+      midnight: 'linear-gradient(135deg, #0a0a14 0%, #1a1a2e 40%, #0d1117 100%)',
+    };
+
+    wallpaperOptions.forEach(opt => {
+      opt.addEventListener('click', () => {
+        const wp = (opt as HTMLElement).dataset.wallpaper;
+        if (!wp) return;
+        wallpaperOptions.forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+
+        const wallpaperImg = document.querySelector('.desktop-wallpaper') as HTMLImageElement;
+        if (wallpaperImg && wallpaperGradients[wp]) {
+          // If it's the default, show the image; otherwise use a gradient
+          if (wp === 'default') {
+            wallpaperImg.style.display = '';
+            const gradientBg = document.querySelector('.desktop-gradient-bg') as HTMLElement;
+            if (gradientBg) gradientBg.style.display = 'none';
+          } else {
+            wallpaperImg.style.display = 'none';
+            let gradientBg = document.querySelector('.desktop-gradient-bg') as HTMLElement;
+            if (!gradientBg) {
+              gradientBg = document.createElement('div');
+              gradientBg.className = 'desktop-gradient-bg';
+              gradientBg.style.cssText = 'position:absolute;inset:0;z-index:0;transition:background 0.6s ease;';
+              wallpaperImg.parentElement?.insertBefore(gradientBg, wallpaperImg);
+            }
+            gradientBg.style.display = '';
+            gradientBg.style.background = wallpaperGradients[wp];
+          }
+        }
+      });
+    });
+
+    // Dock style
+    dockToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        dockToggles.forEach(t => t.classList.remove('active'));
+        toggle.classList.add('active');
+        const style = (toggle as HTMLElement).dataset.dock;
+        const dock = document.getElementById('dock');
+        const dockWrapper = document.getElementById('dock-wrapper');
+        if (style === 'full' && dockWrapper) {
+          dockWrapper.style.left = '8px';
+          dockWrapper.style.right = '8px';
+          dockWrapper.style.transform = 'translateX(0) translateY(0)';
+          if (dock) dock.style.width = '100%';
+        } else if (dockWrapper) {
+          dockWrapper.style.left = '';
+          dockWrapper.style.right = '';
+          dockWrapper.style.transform = '';
+          if (dock) dock.style.width = '';
+        }
+      });
+    });
+
+    // Animation toggle
+    if (animToggle) {
+      animToggle.addEventListener('change', () => {
+        if (animToggle.checked) {
+          document.documentElement.style.removeProperty('--transition-fast');
+          document.documentElement.style.removeProperty('--transition-normal');
+          document.documentElement.style.removeProperty('--transition-slow');
+        } else {
+          document.documentElement.style.setProperty('--transition-fast', '0s');
+          document.documentElement.style.setProperty('--transition-normal', '0s');
+          document.documentElement.style.setProperty('--transition-slow', '0s');
+        }
+      });
+    }
+
+    // Magnification toggle
+    if (magnifyToggle) {
+      magnifyToggle.addEventListener('change', () => {
+        const dockItems = document.querySelectorAll('.dock-item');
+        dockItems.forEach(item => {
+          (item as HTMLElement).style.pointerEvents = magnifyToggle.checked ? '' : '';
+          if (!magnifyToggle.checked) {
+            (item as HTMLElement).classList.add('no-magnify');
+          } else {
+            (item as HTMLElement).classList.remove('no-magnify');
+          }
+        });
+      });
+    }
+  }
+
+  initSettings();
+</script>

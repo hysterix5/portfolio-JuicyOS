@@ -1,0 +1,212 @@
+---
+/* Login Screen — Click to enter desktop */
+---
+
+<div id="login-screen" class="hidden">
+  <div class="login-wallpaper"></div>
+  <div class="login-overlay"></div>
+  <div class="login-content">
+    <div class="login-clock" id="login-clock"></div>
+    <div class="login-date" id="login-date"></div>
+    <div class="login-user">
+      <div class="avatar">
+        <svg viewBox="0 0 80 80" width="80" height="80" fill="none">
+          <circle cx="40" cy="40" r="38" fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.4)" stroke-width="2"/>
+          <circle cx="40" cy="30" r="14" fill="rgba(167,139,250,0.6)"/>
+          <ellipse cx="40" cy="62" rx="22" ry="16" fill="rgba(167,139,250,0.4)"/>
+        </svg>
+      </div>
+      <h2 class="username">Joseph Mel Resty Denopol</h2>
+      <button class="login-btn" id="login-btn">
+        <span class="login-btn-text">Click to Enter</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+    <div class="login-footer">
+      <span>JuicyOS 1.0</span>
+      <span>·</span>
+      <span id="login-session">GNOME Desktop</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  #login-screen {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-boot) - 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #login-screen.hidden {
+    display: none;
+  }
+
+  #login-screen.visible {
+    display: flex;
+    animation: fadeIn 0.8s var(--ease-out) forwards;
+  }
+
+  #login-screen.exiting {
+    animation: fadeOut 0.6s var(--ease-out) forwards;
+    pointer-events: none;
+  }
+
+  .login-wallpaper {
+    position: absolute;
+    inset: 0;
+    background: url('/wallpaper.png') center/cover no-repeat;
+    filter: blur(30px) brightness(0.4);
+    transform: scale(1.1);
+  }
+
+  .login-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+  }
+
+  .login-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .login-clock {
+    font-size: 64px;
+    font-weight: 300;
+    letter-spacing: -2px;
+    color: #fff;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    margin-bottom: 0;
+    line-height: 1;
+  }
+
+  .login-date {
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 40px;
+    letter-spacing: 0.5px;
+  }
+
+  .login-user {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(124, 58, 237, 0.1);
+    border: 2px solid rgba(124, 58, 237, 0.3);
+    box-shadow: 0 0 30px rgba(124, 58, 237, 0.15);
+    transition: all var(--transition-normal);
+  }
+
+  .avatar:hover {
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.3);
+    border-color: rgba(124, 58, 237, 0.5);
+  }
+
+  .username {
+    font-size: 22px;
+    font-weight: 500;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .login-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 28px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 24px;
+    background: rgba(124, 58, 237, 0.25);
+    color: #fff;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    backdrop-filter: blur(12px);
+    margin-top: 8px;
+  }
+
+  .login-btn:hover {
+    background: rgba(124, 58, 237, 0.45);
+    border-color: rgba(124, 58, 237, 0.5);
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+  }
+
+  .login-btn:active {
+    transform: scale(0.98);
+  }
+
+  .login-footer {
+    position: fixed;
+    bottom: 24px;
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+  }
+
+  @media (max-width: 640px) {
+    .login-clock {
+      font-size: 48px;
+    }
+  }
+</style>
+
+<script>
+  function initLoginScreen() {
+    const loginScreen = document.getElementById('login-screen');
+    const loginBtn = document.getElementById('login-btn');
+    const clockEl = document.getElementById('login-clock');
+    const dateEl = document.getElementById('login-date');
+
+    if (!loginScreen || !loginBtn || !clockEl || !dateEl) return;
+
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      clockEl!.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      dateEl!.textContent = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Show login when boot completes
+    document.addEventListener('boot-complete', () => {
+      loginScreen.classList.remove('hidden');
+      loginScreen.classList.add('visible');
+    });
+
+    // Login button
+    loginBtn.addEventListener('click', () => {
+      loginScreen.classList.add('exiting');
+      setTimeout(() => {
+        loginScreen.style.display = 'none';
+        document.dispatchEvent(new CustomEvent('login-complete'));
+      }, 600);
+    });
+  }
+
+  initLoginScreen();
+</script>
